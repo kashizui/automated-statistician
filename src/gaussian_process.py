@@ -49,9 +49,10 @@ class GaussianProcess(object):
                 )
             )
         )
+        self.K_inv = tf.matrix_inverse(self.K)
         # Determine the gp negative log marginal likelihood
         self.cost = (
-            tf.matmul(tf.matmul(tf.transpose(self.y),tf.matrix_inverse(self.K)),
+            tf.matmul(tf.matmul(tf.transpose(self.y), self.K_inv),
                       self.y)
             + tf.log(tf.matrix_determinant(self.K))
         )
@@ -77,7 +78,6 @@ class GaussianProcess(object):
         # Perform in batches
         n_samples = X.shape[0]
         n_batches = n_samples/self.batch_size
-        print self.sess.run(self.kernel.length_scales)
         for i in xrange(self.n_epochs):
             # shuffle data
             shuffle = np.random.permutation(n_samples)
@@ -88,22 +88,28 @@ class GaussianProcess(object):
                 mini_X = X[j*self.batch_size : (j+1)*self.batch_size]
                 mini_y = y[j*self.batch_size : (j+1)*self.batch_size]
                 self.sess.run(train, feed_dict={self.X: mini_X, self.y: mini_y})
-        print self.sess.run(self.kernel.length_scales)
-        print self.sess.run(self.kernel.amp)
-        print self.sess.run(self.noise)
-
+        # Current hack: save the values
+        self.K_invf = self.sess.run(self.K_inv, feed_dict={self.X: mini_X, self.y: mini_y})
+        self.Xf = X
+        self.yf = y
+        
     def predict(self, X):
-        pass
+        # Predict mean
+        K_ = self.kernel.covariance(X, self.Xf)
+        K_K_invf = tf.matmul(K_, self.K_invf)
+        y_pred = tf.matmul(K_K_invf, self.yf)
+        var = self.kernel.covariance(X) - tf.matmul(K_K_invf, tf.transpose(K_))
+        return self.sess.run(y_pred), np.diag(self.sess.run(var)).reshape([X.shape[0],1])
         
 def main():        
     from scipy.spatial.distance import cdist
     import matplotlib.pyplot as plt
     # Create X and Y
-    n_samples = 4
+    n_samples = 10
     n_dim = 1
     X = np.float32(np.random.uniform(1, 10, [n_samples, n_dim]))
-    y = (np.sin(X.sum(1)).reshape([n_samples, 1]) +
-         np.random.normal(0,.1, [n_samples, 1]))
+    y = np.float32((np.sin(X.sum(1)).reshape([n_samples, 1]) +
+         np.random.normal(0,.1, [n_samples, 1])))
     kernel = SquaredExponential(n_dim=n_dim,
                                 init_scale_range=(1.,1.),
                                 init_amp=1.)
@@ -111,10 +117,21 @@ def main():
                          batch_size=n_samples,
                          n_dim=n_dim,
                          kernel=kernel,
-                         noise=1.,
+                         noise=0.1,
+                         train_noise=False,
                          optimizer=tf.train.GradientDescentOptimizer(0.01),
                          verbose=0)
     gp.fit(X, y)
+    print gp.sess.run(gp.noise)
+    X_new = np.float32(np.random.uniform(1, 10, [n_samples*100, n_dim]))
+    X_new = np.sort(X_new, axis=0)
+    y_pred, var = gp.predict(X_new)
+    ci = np.sqrt(var)*2
+    plt.plot(X_new, y_pred)
+    plt.plot(X_new, y_pred+ci, 'g--')
+    plt.plot(X_new, y_pred-ci, 'g--')
+    plt.scatter(X, y)
+    plt.show()
     
 if __name__ == "__main__":
     main()
