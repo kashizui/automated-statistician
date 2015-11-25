@@ -31,7 +31,7 @@ class Kernel(object):
         # Randomly generate initial length scales for covariance matrix
         self.length_scales = tf.Variable(
             tf.random_uniform(
-                (self.n_dim,),
+                [self.n_dim],
                 minval=init_scale_range[0], maxval=init_scale_range[1]
             )
         )
@@ -57,8 +57,8 @@ class Kernel(object):
         # Scale X and Y accordingly
         Xs, Ys = (tf.div(X, self.length_scales), tf.div(Y, self.length_scales))
         # Create matrix of ones
-        Xo = tf.ones(tf.pack((tf.shape(X)[0], 1)))
-        Yo = tf.ones(tf.pack((1, tf.shape(Y)[0])))
+        Xo = tf.ones(tf.pack([tf.shape(X)[0], 1]))
+        Yo = tf.ones(tf.pack([1, tf.shape(Y)[0]]))
         # Precompute squared norms for rows of each matrix
         Xsqn = tf.reshape(tf.reduce_sum(tf.square(Xs), 1), tf.shape(Xo))
         Ysqn = tf.reshape(tf.reduce_sum(tf.square(Ys), 1), tf.shape(Yo))
