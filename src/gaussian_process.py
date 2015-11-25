@@ -18,7 +18,6 @@ def _MatrixDeterminant(op, grad):
     """Gradient for MatrixDeterminant."""
     return grad * op.outputs[0] * tf.transpose(tf.matrix_inverse(op.inputs[0]))
 
-
 class GaussianProcess(object):
     """ Gaussian Process Class
     
@@ -56,7 +55,12 @@ class GaussianProcess(object):
                       self.y)
             + tf.log(tf.matrix_determinant(self.K))
         )
-        
+        # Initialize the TensorFlow session.
+        self.sess = tf.Session(
+            config=tf.ConfigProto(
+                inter_op_parallelism_threads=1, intra_op_parallelism_threads=1
+            )       
+        )
 
     def fit(self, X, y):
         """ Fit the gaussian process
@@ -68,12 +72,6 @@ class GaussianProcess(object):
         """
         # Train length scales via gradient descent
         train = self.optimizer.minimize(self.cost)
-        # Initialize the TensorFlow session.
-        self.sess = tf.Session(
-            config=tf.ConfigProto(
-                inter_op_parallelism_threads=1, intra_op_parallelism_threads=1
-            )       
-        )
         self.sess.run(tf.initialize_all_variables())
         # Perform in batches
         n_samples = X.shape[0]
@@ -94,7 +92,8 @@ class GaussianProcess(object):
         self.yf = y
         
     def predict(self, X):
-        # Predict mean
+        # Predict mean. Since we're already at the prediction phase, all
+        # parameters in GP should be fixed.
         K_ = self.kernel.covariance(X, self.Xf)
         K_K_invf = tf.matmul(K_, self.K_invf)
         y_pred = tf.matmul(K_K_invf, self.yf)
@@ -119,7 +118,7 @@ def main_1d():
                          kernel=kernel,
                          noise=0.1,
                          train_noise=False,
-                         optimizer=tf.train.GradientDescentOptimizer(0.001),
+                         optimizer=tf.train.GradientDescentOptimizer(0.01),
                          verbose=0)
     gp.fit(X, y)
     print gp.sess.run(gp.kernel.length_scales)
@@ -163,6 +162,8 @@ def main_2d():
                          optimizer=tf.train.GradientDescentOptimizer(0.001),
                          verbose=0)
     gp.fit(X, y)
+    print gp.sess.run(gp.noise)
+    print gp.sess.run(gp.kernel.length_scales)
     a = np.arange(0, 10, 0.25)
     b = np.arange(0, 10, 0.25)
     a, b = np.meshgrid(a, b)
@@ -172,7 +173,7 @@ def main_2d():
     var = np.diag(gp.sess.run(cov)).reshape(y_pred.shape)
     ci = (np.sqrt(var)*2).reshape(a.shape)
     surf = ax.plot_surface(a, b, y_pred, rstride=1, cstride=1, cmap=cm.coolwarm,
-                           linewidth=0, antialiased=False, alpha=.5)
+                           linewidth=0, antialiased=False, alpha=1)
     surf = ax.plot_surface(a, b, y_pred-ci, rstride=1, cstride=1, cmap=cm.cool,
                            linewidth=0, antialiased=False, alpha=.5)
     surf = ax.plot_surface(a, b, y_pred+ci, rstride=1, cstride=1, cmap=cm.cool,
