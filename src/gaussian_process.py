@@ -86,6 +86,7 @@ class GaussianProcess(object):
         var_list = [self.kernel.length_scales]
         if self.train_noise:
             var_list.append(self.noise)
+        self.grad = tf.gradients(self.cost, xs=var_list)
         self.train = self.optimizer.minimize(self.cost, var_list=var_list)
         # Initialize the TensorFlow session
         self.sess = tf.Session(
@@ -118,11 +119,18 @@ class GaussianProcess(object):
                 # Get minibatch
                 mini_X = X[j*self.batch_size : (j+1)*self.batch_size]
                 mini_y = y[j*self.batch_size : (j+1)*self.batch_size]
-                # Update 
+                # Update
+                if self.verbose > 0:
+                    print "Noise: {0:.3f}".format(self.sess.run(self.noise))
+                    print ("Length Scale: {0:.3f}"
+                           .format(self.sess.run(self.kernel.length_scales)[0]))
+                    print self.sess.run(self.grad, feed_dict={self.X: mini_X,
+                                                              self.y: mini_y})
                 self.sess.run(self.train, feed_dict={self.X: mini_X,
                                                      self.y: mini_y})
         # Current hack: save the values
-        self.K_invf = self.sess.run(self.K_inv, feed_dict={self.X: X, self.y: y})
+        self.K_invf = self.sess.run(self.K_inv,
+                                    feed_dict={self.X: X, self.y: y})
         self.Xf = X
         self.yf = y
         
@@ -148,39 +156,52 @@ class GaussianProcess(object):
         # Posterior mean
         y_pred = tf.matmul(K_K_invf, self.yf)
         # Posterior variance
-        var = tf.reshape(
+        var = tf.abs(tf.reshape(
             tf.square(self.kernel.amp)
             - tf.reduce_sum(tf.mul(K_K_invf, K_), 1),
             [-1,1]
-        )
+        ))
         return y_pred, var
 
     
-def main_1d():        
+def main_1d():
+    """ Use Gaussian process regression to perform a 1D function regression task
+    """
     import matplotlib.pyplot as plt
-    # Create X and Y
-    n_samples = 100
-    new_samples = 400
-    n_dim = 1
-    X = np.float32(np.random.uniform(1, 10, [n_samples, n_dim]))
+    # Settings
+    n_samples = 28              # number of samples to train GP on 
+    n_predict = 400             # number of samples for prediction
+    n_dim = 1                   # 1D regression task
+    lim = [0, 1]
+    # Set seed
+    tf.set_random_seed(2)
+    np.random.seed(2)
+    # Generate n_samples
+    X = np.float32(np.random.uniform(lim[0], lim[1], [n_samples, n_dim]))
     y = np.float32((np.sin(X.sum(1)).reshape([n_samples, 1]) +
          np.random.normal(0,.1, [n_samples, 1])))
+    # Create the kernel for GP
     kernel = SquaredExponential(n_dim=n_dim,
-                                init_scale_range=(.1,.2),
+                                init_scale_range=(.01,.01),
                                 init_amp=1.)
+    # Create the GP object
     gp = GaussianProcess(n_epochs=10,
-                         batch_size=10,
+                         batch_size=n_samples,
                          n_dim=n_dim,
                          kernel=kernel,
-                         noise=0.1,
+                         noise=.1,
                          train_noise=False,
-                         optimizer=tf.train.GradientDescentOptimizer(0.01),
-                         verbose=0)
+                         optimizer=tf.train.AdagradOptimizer(0.01),
+                         verbose=1)
     t0 = time.time()
+    # Train GP on training data to learn length scales
     gp.fit(X, y)
     print "FitDuration: {0:.5f}".format(time.time() - t0)
-    print gp.sess.run(gp.kernel.length_scales)
-    X_new = np.float32(np.random.uniform(1, 10, [new_samples, n_dim]))
+    print "LengthScale: {0:4.3f}".format(gp.sess.run(gp.kernel.length_scales)[0])
+    print "Noise: {0:4.3f}".format(gp.sess.run(gp.noise))
+    print "Cost: {0:4.3f}".format(gp.sess.run(gp.cost, feed_dict={gp.X: X, gp.y: y})[0,0])
+    # Make prediction
+    X_new = np.float32(np.linspace(lim[0], lim[1], n_predict).reshape(-1,1))
     X_new = np.sort(X_new, axis=0)
     y_pred, var = gp.predict(X_new)
     t1 = time.time()
@@ -198,48 +219,61 @@ def main_1d():
     plt.show()
     
 def main_2d():        
+    """ Use Gaussian process regression to perform a 2D function regression task
+    """
     from mpl_toolkits.mplot3d import Axes3D
     from matplotlib import cm
     from matplotlib.ticker import LinearLocator, FormatStrFormatter
     import matplotlib.pyplot as plt
-
-    n_samples = 50
+    # Set seed
+    tf.set_random_seed(2)
+    np.random.seed(2)
+    # Settings
+    n_samples = 20
     n_dim = 2
-    
-    fig = plt.figure()
-    ax = fig.gca(projection='3d')
+    # Get training samples
     X = np.float32(np.random.uniform(0, 10, [n_samples, n_dim]))
     y = np.float32((np.sin(np.sqrt(X).sum(1)).reshape([n_samples, 1])
                     + np.random.normal(0, .1, [n_samples, 1])))
-    scat = ax.scatter(X[:,0], X[:,1], y)
-
+    # Construct the kernel
     kernel = SquaredExponential(n_dim=n_dim,
-                                init_scale_range=(.1,.2),
+                                init_scale_range=(12.,12.),
                                 init_amp=1.)
+    # Construct the gaussian process
     gp = GaussianProcess(n_epochs=100,
-                         batch_size=10,
+                         batch_size=3,
                          n_dim=n_dim,
                          kernel=kernel,
-                         noise=0.1,
+                         noise=0.2,
                          train_noise=False,
-                         optimizer=tf.train.GradientDescentOptimizer(0.001),
+                         optimizer=tf.train.AdagradOptimizer(.01),
                          verbose=0)
+    t0 = time.time()
     gp.fit(X, y)
-    print gp.sess.run(gp.noise)
-    print gp.sess.run(gp.kernel.length_scales)
-    a = np.arange(0, 10, 0.25)
-    b = np.arange(0, 10, 0.25)
-    a, b = np.meshgrid(a, b)
-    X_new = np.float32(np.hstack((a.ravel().reshape(-1, 1), b.ravel().reshape(-1, 1))))
-    y_pred, cov = gp.predict(X_new)
-    y_pred = (gp.sess.run(y_pred)).reshape(a.shape)
-    var = gp.sess.run(cov)
-    ci = (np.sqrt(var)*2).reshape(a.shape)
-    surf = ax.plot_surface(a, b, y_pred, rstride=1, cstride=1, cmap=cm.coolwarm,
+    print "FitDuration: {0:.5f}".format(time.time() - t0)
+    print "LengthScale: {0:4.3f}".format(gp.sess.run(gp.kernel.length_scales)[0])
+    print "Noise: {0:4.3f}".format(gp.sess.run(gp.noise))
+    print "Cost: {0:4.3f}".format(gp.sess.run(gp.cost, feed_dict={gp.X: X, gp.y: y})[0,0])
+    # Create the mesh grid for prediction
+    mx = np.arange(0, 10, 0.25)
+    my = np.arange(0, 10, 0.25)
+    mx, my = np.meshgrid(mx, my)
+    X_new = np.float32(np.hstack((mx.ravel().reshape(-1, 1),
+                                  my.ravel().reshape(-1, 1))))
+    # Make prediction
+    y_pred, var = gp.predict(X_new)
+    y_pred = (gp.sess.run(y_pred)).reshape(mx.shape)
+    var = gp.sess.run(var)
+    ci = (np.sqrt(var)*2).reshape(mx.shape)
+    # Plot
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
+    scat = ax.scatter(X[:,0], X[:,1], y)
+    surf = ax.plot_surface(mx, my, y_pred, rstride=1, cstride=1, cmap=cm.coolwarm,
                            linewidth=0, antialiased=False, alpha=1)
-    surf = ax.plot_surface(a, b, y_pred-ci, rstride=1, cstride=1, cmap=cm.cool,
+    surf = ax.plot_surface(mx, my, y_pred-ci, rstride=1, cstride=1, cmap=cm.cool,
                            linewidth=0, antialiased=False, alpha=.5)
-    surf = ax.plot_surface(a, b, y_pred+ci, rstride=1, cstride=1, cmap=cm.cool,
+    surf = ax.plot_surface(mx, my, y_pred+ci, rstride=1, cstride=1, cmap=cm.cool,
                            linewidth=0, antialiased=False, alpha=.5)
     plt.show()
 
