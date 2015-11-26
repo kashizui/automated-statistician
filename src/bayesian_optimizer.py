@@ -8,6 +8,8 @@ class BayesianOptimizer(object):
         self.gp = gp
         self.sess = self.gp.sess
         self.region = region
+        self.x = tf.Variable(tf.random_uniform([1, len(self.region)], minval=0, maxval=10))
+        self.opt = tf.train.GradientDescentOptimizer(.1)
 
     def contains_point(self, x):
         return any([self.region[i, 0] <= x[i] <= self.region[i, 1]
@@ -23,32 +25,31 @@ class BayesianOptimizer(object):
 
     def fit(self, X, y):
         self.gp.fit(X, y)
-    
+        self.y_pred, self.cov = self.gp.predict(self.x)
+        self.acq = self.y_pred + 2*tf.sqrt(self.cov)
+        self.train = self.opt.minimize(-self.acq, var_list=[self.x])
+
     def select(self):
-        x = tf.Variable(np.random.uniform(0, 10, [1, len(self.region)]).astype(np.float32))
-        y_pred, cov = self.gp.predict(x)
-        acq = y_pred + 2*tf.sqrt(cov)
-        self.sess.run(tf.initialize_variables([x]))
-        print self.sess.run(x), self.sess.run(acq)
-        opt = tf.train.GradientDescentOptimizer(.1)
-        train = opt.minimize(-acq, var_list=[x])
+        self.sess.run(tf.initialize_variables([self.x]))
+        print self.sess.run(self.x), self.sess.run(self.acq)
         for _ in xrange(100):
-            self.sess.run(train)
-            if not self.contains_point(self.sess.run(x)):
+            self.sess.run(self.train)
+            if not self.contains_point(self.sess.run(self.x)):
                 break
-        self.sess.run(tf.assign(x, self.clip(self.sess.run(x))))
-        return self.sess.run(x), self.sess.run(y_pred), self.sess.run(acq)
+        return self.sess.run(self.x), self.sess.run(self.y_pred), self.sess.run(self.acq)
             
 def main_1d():
     import matplotlib.pyplot as plt
-    n_samples = 10
+    import time 
+    n_samples = 4
+    batch_size = 4
     new_samples = 100
     n_dim = 1
     kernel = SquaredExponential(n_dim=n_dim,
                                 init_scale_range=(.1,.2),
                                 init_amp=1.)
     gp = GaussianProcess(n_epochs=100,
-                         batch_size=10,
+                         batch_size=batch_size,
                          n_dim=n_dim,
                          kernel=kernel,
                          noise=0.1,
@@ -64,20 +65,33 @@ def main_1d():
     y = observe(X)
     plt.axis((0, 10, -3, 3))
     bo.fit(X, y)
-    for _ in xrange(10):
-        x_next, y_next, acq_next = bo.select()
+    for i in xrange(100):
+        print "Iteration {0:3d}".format(i) + "*"*80
+        t0 = time.time()
+        max_acq = -np.inf
+        for _ in xrange(1):
+            t1 = time.time()
+            x_cand, y_cand, acq_cand = bo.select()
+            print "BOSelectDuration: {0:.5f}".format(time.time() - t1)
+            if acq_cand > max_acq:
+                x_next= x_cand
+                y_next= y_cand
+                acq_next = acq_cand
         plt.plot([x_next[0,0], x_next[0,0]], plt.ylim(), 'r--')
         plt.scatter(x_next, y_next, c='r', linewidths=0, s=50)
         plt.scatter(x_next, acq_next, c='g', linewidths=0, s=50)
         y_obs = observe(x_next)
         X = np.vstack((X, x_next))
         y = np.vstack((y, y_obs))
+        t2 = time.time()
         bo.fit(X, y)
+        print "BOFitDuration: {0:.5f}".format(time.time() - t2)
+        print "BOTotalDuration: {0:.5f}".format(time.time() - t0)
     X_new = np.float32(np.linspace(0, 10, new_samples).reshape(-1, 1))
     X_new = np.sort(X_new, axis=0)
     y_pred, cov = gp.predict(X_new)
     y_pred = gp.sess.run(y_pred)
-    var = np.diag(gp.sess.run(cov)).reshape(y_pred.shape)
+    var = gp.sess.run(cov)
     ci = np.sqrt(var)*2
     plt.plot(X_new, y_pred)
     plt.plot(X_new, y_pred+ci, 'g--')
