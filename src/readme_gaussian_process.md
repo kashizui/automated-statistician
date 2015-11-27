@@ -26,3 +26,7 @@ It is very important to note that the the cost function is not convex with respe
 
 ### Tuning the Parameters
 For carefully chosen noise (how do we decided beforehand?), length scale tuning is a very safe endeavor. Tuning both at the same time can be very scary. One possibility to address is this an EM-like operation, that fixes one and tunes the other. Hopefully such an approach makes the tuning feasible.
+
+Another possible fix is to use different learning rates for the length scale and noise. If we have a good prior on the noise, we probably want to update noise more conservatively than length scales.
+
+Another possible fix involves being SUPER careful about which data is being fed in during minibatch. For example, for a given current noise and length settings, don't put data into the matrix that will cause inversion problem. However, this doesn't quite resolve the problem that the final matrix needs to be invertible. But... do we even have that issue? I think I've seen cases where the cost is -infinity but... something still appeared. I need to investigate...
