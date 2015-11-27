@@ -11,8 +11,6 @@ __docformat__ = "restructuredtext en"
 
 import tensorflow as tf
 import numpy as np
-from kernels import *
-import time
 
 @tf.RegisterGradient("MatrixDeterminant")
 def _MatrixDeterminant(op, grad):
@@ -141,7 +139,7 @@ class GaussianProcess(object):
         ----------
         X : np or tf nd.array. shape = (n_samples, n_dim)
             The design matrix
-        
+
         Returns
         -------
         y_pred : tf nd.array. shape = (n_samples, 1)
@@ -167,6 +165,8 @@ class GaussianProcess(object):
 def main_1d():
     """ Use Gaussian process regression to perform a 1D function regression task
     """
+    from kernels import SquaredExponential
+    import time
     import matplotlib.pyplot as plt
     # Settings
     n_samples = 28              # number of samples to train GP on 
@@ -221,6 +221,8 @@ def main_1d():
 def main_2d():        
     """ Use Gaussian process regression to perform a 2D function regression task
     """
+    from kernels import SquaredExponential
+    import time
     from mpl_toolkits.mplot3d import Axes3D
     from matplotlib import cm
     from matplotlib.ticker import LinearLocator, FormatStrFormatter
@@ -247,7 +249,7 @@ def main_2d():
                          noise=0.2,
                          train_noise=False,
                          optimizer=tf.train.AdagradOptimizer(.01),
-                         verbose=0)
+                         verbose=1)
     t0 = time.time()
     gp.fit(X, y)
     print "FitDuration: {0:.5f}".format(time.time() - t0)
