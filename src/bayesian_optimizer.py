@@ -1,52 +1,154 @@
+"""
+bayesian_optimizer.py
+
+Author: Rui Shu
+
+This module implements bayesian optimization of a black-box
+function. Internally, the bayesian optimizer utilizes a gaussian process to
+construct a belief over the distribution of the latent function based on the
+observed points, followed by using an ancquisition function that leverages
+exploration/exploitation trade off to determine the next point to query.
+"""
+__docformat__ = "restructuredtext en"
+
 import tensorflow as tf
 import numpy as np
-from kernels import *
-from gaussian_process import GaussianProcess
 
 class BayesianOptimizer(object):
-    def __init__(self, gp, region):
+    """ Bayesian Optimization Class
+
+    Performs bayesian optimization using a gaussian process that generates the
+    posterior mean and variance of the latent function given observed data. The
+    goal of bayesian optimization is to find the maximum of the latent function.
+    """
+    def __init__(self, gp, region, iters,
+                 optimizer=tf.train.GradientDescentOptimizer(0.1),
+                 verbose=0):
+        """ Initialize the parameters of the BayesianOptimizer object
+
+        Parameters
+        ----------
+        gp : GaussianProcess
+            A GaussianProcess object to be used for interpolating the data.
+        region : np nd.array. shape = (n_dim, 2)
+            Describes the cartesion box R that constraints the optimization
+            task. The goal is to find \argmax_{x \in R} f(x).
+        optimizer : tf.train.Gradient
+            One of any gradient descent methods. Default to using basic sgd.
+        iters : int 
+            Number of iterations of gradient descent.
+        verbose : int 
+            Allows for different levels of verbosity for debugging purposes
+        """
+        # Save data
         self.gp = gp
-        self.sess = self.gp.sess
         self.region = region
-        self.x = tf.Variable(tf.random_uniform([1, len(self.region)], minval=0, maxval=10))
-        self.opt = tf.train.GradientDescentOptimizer(.1)
+        # Get the session from the GP object
+        self.sess = self.gp.sess
+        # x marks the query location of the next point. Currently not robustly
+        # written. Must rewrite later.
+        self.x = tf.Variable(tf.random_uniform([1, len(self.region)],
+                                               minval=0, maxval=10))
+        # Define optimization algorithm
+        self.opt = optimizer
+        self.iters = iters
+        self.verbose = verbose
 
     def contains_point(self, x):
+        """ Checks if x is contained within the optimization task region.
+
+        Parameters
+        ----------
+        x : np nd.array. shape = (1, n_dims)
+            Describes the point location.
+
+        Returns
+        -------
+        N/A : bool
+            Boolean describing whether x is contained in the space  .
+        """
         return any([self.region[i, 0] <= x[i] <= self.region[i, 1]
                     for i in xrange(len(self.region))])
 
     def clip(self, x):
+        """ Confine x to search space
+
+        Parameters
+        ----------
+        x : np nd.array. shape = (1, n_dims)
+            Describes the point location.
+
+        Returns
+        -------
+        xT.T : np nd.array. shape = (1, n_dims)
+            The clipped point.
+        """
         xT = x.T
+        # Clip x along dimensions that violate the lower bound of the region
         low_idx = xT[:, 0] < self.region[:, 0]
         xT[low_idx, 0] = self.region[low_idx, 0]
+        # Clip x along dimensions that violate the upper bound of the region
         high_idx = xT[:, 0] > self.region[:, 1]
         xT[high_idx, 0] = self.region[high_idx, 1]
         return xT.T
 
     def fit(self, X, y):
+        """ Fit the model that the Bayesian optimizer is using
+        
+        Parameters
+        ----------
+        X : np nd.array. shape = (n_samples, n_dim)
+            The design matrix
+        y : np nd.array. shape = (n_samples, 1)
+            The response variable
+        """
         self.gp.fit(X, y)
+        # Get the tensor variables for prediction at x
         self.y_pred, self.cov = self.gp.predict(self.x)
+        # Define the acquisition function, which in our case is just the UCB
         self.acq = self.y_pred + 2*tf.sqrt(self.cov)
+        # Define the optimization task: maximizing acq w.r.t. self.x
         self.train = self.opt.minimize(-self.acq, var_list=[self.x])
 
     def select(self):
+        """ Select a point that maximizes the acquisition function. Finds this
+        point via gradient descend of -acq.
+
+        Returns
+        -------
+        self.sess.run(self.x) : np nd.array. shape = (1, n_dims)
+            Best point.
+        self.sess.run(self.y_pred) : np nd.array. shape = (1, 1)
+            Posterior mean at self.x
+        self.sess.run(self.acq) : np nd.array. shape = (1, 1)
+            Acquisition function at self.x
+        """
+        # Only need to initialize self.x
         self.sess.run(tf.initialize_variables([self.x]))
-        print self.sess.run(self.x), self.sess.run(self.acq)
-        for _ in xrange(100):
+        if self.verbose > 0:
+            print "BOPoint:", self.sess.run(self.x)[0]
+            print "BOAcquisition:", self.sess.run(self.acq)[0,0]
+        for _ in xrange(self.iters):
             self.sess.run(self.train)
+            # Break from gradient descent if outside of optimization region
             if not self.contains_point(self.sess.run(self.x)):
                 break
-        return self.sess.run(self.x), self.sess.run(self.y_pred), self.sess.run(self.acq)
+        return (self.sess.run(self.x), self.sess.run(self.y_pred),
+                self.sess.run(self.acq))
             
 def main_1d():
+    from kernels import SquaredExponential
+    from gaussian_process import GaussianProcess
     import matplotlib.pyplot as plt
-    import time 
+    import time
+    # Settings
     n_samples = 4
     batch_size = 4
     new_samples = 100
     n_dim = 1
+    # Set up the modules for bayesian optimizer
     kernel = SquaredExponential(n_dim=n_dim,
-                                init_scale_range=(.1,.2),
+                                init_scale_range=(.5,1),
                                 init_amp=1.)
     gp = GaussianProcess(n_epochs=100,
                          batch_size=batch_size,
@@ -56,42 +158,56 @@ def main_1d():
                          train_noise=False,
                          optimizer=tf.train.GradientDescentOptimizer(0.001),
                          verbose=0)
-    bo = BayesianOptimizer(gp, region=np.array([[0., 10.]]))
-    X = np.float32(np.random.uniform(1, 10, [n_samples, n_dim]))
+    bo = BayesianOptimizer(gp, region=np.array([[0., 10.]]),
+                           iters=100,
+                           optimizer=tf.train.GradientDescentOptimizer(0.1),
+                           verbose=1)
+    # Define the latent function + noise
     def observe(X):
         y = np.float32((np.sin(X.sum(1)).reshape([X.shape[0], 1]) +
                         np.random.normal(0,.1, [X.shape[0], 1])))
         return y
+    # Get data
+    X = np.float32(np.random.uniform(1, 10, [n_samples, n_dim]))
     y = observe(X)
     plt.axis((0, 10, -3, 3))
+    # Fit the gp
     bo.fit(X, y)
-    for i in xrange(100):
+    for i in xrange(10):
         print "Iteration {0:3d}".format(i) + "*"*80
         t0 = time.time()
         max_acq = -np.inf
+        # Inner loop to allow for gd with random initializations multiple times
         for _ in xrange(1):
             t1 = time.time()
+            # Get the best point w.r.t. acquisition function.
             x_cand, y_cand, acq_cand = bo.select()
             print "BOSelectDuration: {0:.5f}".format(time.time() - t1)
             if acq_cand > max_acq:
+                # Save best point
                 x_next= x_cand
                 y_next= y_cand
                 acq_next = acq_cand
+        # Plot the selected point
         plt.plot([x_next[0,0], x_next[0,0]], plt.ylim(), 'r--')
         plt.scatter(x_next, y_next, c='r', linewidths=0, s=50)
         plt.scatter(x_next, acq_next, c='g', linewidths=0, s=50)
+        # Observe and add point to observed data
         y_obs = observe(x_next)
         X = np.vstack((X, x_next))
         y = np.vstack((y, y_obs))
         t2 = time.time()
+        # Fit again
         bo.fit(X, y)
         print "BOFitDuration: {0:.5f}".format(time.time() - t2)
         print "BOTotalDuration: {0:.5f}".format(time.time() - t0)
+    # Get the final posterior mean and variance for the entire domain space
     X_new = np.float32(np.linspace(0, 10, new_samples).reshape(-1, 1))
     X_new = np.sort(X_new, axis=0)
     y_pred, cov = gp.predict(X_new)
     y_pred = gp.sess.run(y_pred)
     var = gp.sess.run(cov)
+    # Compute the confidence interval
     ci = np.sqrt(var)*2
     plt.plot(X_new, y_pred)
     plt.plot(X_new, y_pred+ci, 'g--')
