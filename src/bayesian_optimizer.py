@@ -45,10 +45,12 @@ class BayesianOptimizer(object):
         self.region = region
         # Get the session from the GP object
         self.sess = self.gp.sess
+        # FIXME
         # x marks the query location of the next point. Currently not robustly
         # written. Must rewrite later.
+        # We assume here that we've scaled the hyperparameter space to the unit hypercube.
         self.x = tf.Variable(tf.random_uniform([1, len(self.region)],
-                                               minval=0, maxval=10))
+                                               minval=0, maxval=1))
         # Define optimization algorithm
         self.opt = optimizer
         self.iters = iters
