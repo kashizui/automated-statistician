@@ -142,7 +142,7 @@ def main_1d():
     import matplotlib.pyplot as plt
     import time
     # Settings
-    n_samples = 4
+    n_samples = 1
     batch_size = 4
     new_samples = 100
     n_dim = 1
@@ -151,7 +151,7 @@ def main_1d():
                                 init_scale_range=(.5,1),
                                 init_amp=1.)
     gp = GaussianProcess(n_epochs=100,
-                         batch_size=batch_size,
+                         batch_size=10,
                          n_dim=n_dim,
                          kernel=kernel,
                          noise=0.1,
@@ -173,7 +173,7 @@ def main_1d():
     plt.axis((0, 10, -3, 3))
     # Fit the gp
     bo.fit(X, y)
-    for i in xrange(10):
+    for i in xrange(20):
         print "Iteration {0:3d}".format(i) + "*"*80
         t0 = time.time()
         max_acq = -np.inf
