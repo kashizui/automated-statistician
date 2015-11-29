@@ -22,12 +22,8 @@ class Model(object):
     """
     Abstract class for model thingy.
     """
-    @classmethod
-    def get_num_hyperparameters(cls):
-        try:
-            return cls.NUM_HYPERPARAMETERS
-        except AttributeError:
-            raise NotImplementedError
+    # Should be overridden in subclasses
+    NUM_HYPERPARAMETERS = None
 
     @classmethod
     def fit(cls, dataset, hyperparameters):
@@ -180,7 +176,7 @@ if __name__ == "__main__":
 
     for cls in globals().values():
         if inspect.isclass(cls) and issubclass(cls, Model) and cls is not Model:
-            hyperparameters = tuple(random.random() for _ in range(cls.get_num_hyperparameters()))
+            hyperparameters = tuple(random.random() for _ in range(cls.NUM_HYPERPARAMETERS))
             print "Calling %s.fit(diabetes, (%s))" % (cls.__name__, ', '.join(map(str, hyperparameters)))
             print cls.fit(diabetes, hyperparameters)
             print
