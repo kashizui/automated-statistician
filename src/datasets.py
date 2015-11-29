@@ -48,8 +48,17 @@ class Dataset(object):
 
     @staticmethod
     def from_file(path):
+        """
+
+        Args:
+            path: string path to (csv?) file
+
+        Returns: a new Dataset instance
+
+        """
         with open(path, 'rb') as f:
             # TODO
+            # return Dataset(x, y)
             pass
 
 
