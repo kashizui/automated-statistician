@@ -7,10 +7,10 @@ This module implements Gaussian process regression, leveraging TensorFlow's
 automatic differentiation for length scale learning and gridless acquisition
 function optimization.
 """
-__docformat__ = "restructuredtext en"
-
 import tensorflow as tf
 import numpy as np
+__docformat__ = "restructuredtext en"
+
 
 @tf.RegisterGradient("MatrixDeterminant")
 def _MatrixDeterminant(op, grad):
@@ -231,7 +231,7 @@ def main_2d():
     tf.set_random_seed(2)
     np.random.seed(2)
     # Settings
-    n_samples = 20
+    n_samples = 1
     n_dim = 2
     # Get training samples
     X = np.float32(np.random.uniform(0, 10, [n_samples, n_dim]))

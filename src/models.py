@@ -8,14 +8,16 @@ in a plug-and-play fashion by the automatic statistician.
 
 
 """
+import inspect
 import timeit
-
 import numpy as np
 from sklearn import (
     svm,
     linear_model,
     ensemble,
+    metrics,
 )
+__docformat__ = "restructuredtext en"
 
 
 class Model(object):
@@ -33,13 +35,21 @@ class Model(object):
             dataset: the Dataset object to train and test
             hyperparameters: a tuple of hyperparameters of size matching output from cls.get_num_hyperparameters
 
-        Returns: (MSE, runtime in seconds)
+        Returns: (performance, runtime in seconds)
 
         """
+        hp = cls._unpack(hyperparameters)
+        print "%s(%s)" % (cls.__name__, ', '.join(["%s=%s" % (key, value) for key, value in hp.iteritems()]))
         tic = timeit.default_timer()
-        performance = cls._fit(dataset, **cls._unpack(hyperparameters))
+        performance = cls._fit(dataset, **hp)
         toc = timeit.default_timer()
         return performance, toc - tic
+
+    @classmethod
+    def _score(cls, pred_target, true_target):
+        # return np.mean((true_target - pred_target) ** 2)
+        # currently returning coefficient of determination:
+        return metrics.r2_score(true_target, pred_target)
 
     @classmethod
     def _unpack(cls, hyperparameters):
@@ -61,7 +71,7 @@ class Model(object):
             dataset: the Dataset object to train and test
             hyperparameters: a tuple of hyperparameters of size matching output from cls.get_num_hyperparameters
 
-        Returns: MSE
+        Returns: predicted targets for test set
 
         """
         raise NotImplementedError
@@ -79,7 +89,7 @@ class RandomForest(Model):
     def _unpack(cls, hyperparameters):
         num_trees, = hyperparameters
         return {
-            "num_trees": int(10 ** (3 * num_trees)),  # FIXME what range should this expand to? currently [0, 1] => [1, 1000]
+            "num_trees": max(int(10 ** (3 * num_trees)), 1),  # FIXME what range should this expand to? currently [0, 1] => [1, 1000]
         }
 
     @classmethod
@@ -89,7 +99,7 @@ class RandomForest(Model):
         # Train the model using the training sets
         regr.fit(dataset.train_data, dataset.train_target)
 
-        return np.mean((regr.predict(dataset.test_data) - dataset.test_target) ** 2)
+        return cls._score(regr.predict(dataset.test_data), dataset.test_target)
 
 
 class SupportVectorRegression(Model):
@@ -105,18 +115,19 @@ class SupportVectorRegression(Model):
     def _unpack(cls, hyperparameters):
         penalty, epsilon = hyperparameters
         return {
-            "penalty": penalty,  # FIXME what range should this expand to? currently [0, 1]
+            "penalty": max(10 ** (2 * penalty), 0.001),  # FIXME what range should this expand to? currently [0, 1]
             "epsilon": epsilon,  # FIXME what range should this expand to? currently [0, 1]
         }
 
     @classmethod
     def _fit(cls, dataset, penalty, epsilon):
+        print "SVR(C=%f, epsilon=%f)" % (penalty, epsilon)
         regr = svm.SVR(kernel='rbf', C=penalty, epsilon=epsilon)
 
         # Train the model using the training sets
         regr.fit(dataset.train_data, dataset.train_target)
 
-        return np.mean((regr.predict(dataset.test_data) - dataset.test_target) ** 2)
+        return cls._score(regr.predict(dataset.test_data), dataset.test_target)
 
 
 class LassoRegression(Model):
@@ -130,7 +141,7 @@ class LassoRegression(Model):
     @classmethod
     def _unpack(cls, hyperparameters):
         return {
-            "alpha": hyperparameters[0]  # FIXME what range should this expand to? currently [0, 1]
+            "alpha": hyperparameters[0] * 10 + 0.01  # FIXME what range should this expand to? currently [0, 10]
         }
 
     @classmethod
@@ -140,7 +151,7 @@ class LassoRegression(Model):
         # Train the model using the training sets
         regr.fit(dataset.train_data, dataset.train_target)
 
-        return np.mean((regr.predict(dataset.test_data) - dataset.test_target) ** 2)
+        return cls._score(regr.predict(dataset.test_data), dataset.test_target)
 
 
 class RidgeRegression(Model):
@@ -154,7 +165,7 @@ class RidgeRegression(Model):
     @classmethod
     def _unpack(cls, hyperparameters):
         return {
-            "alpha": hyperparameters[0]  # FIXME what range should this expand to? currently [0, 1]
+            "alpha": hyperparameters[0] * 10 + 0.01  # FIXME what range should this expand to? currently [0, 1]
         }
 
     @classmethod
@@ -164,19 +175,20 @@ class RidgeRegression(Model):
         # Train the model using the training sets
         regr.fit(dataset.train_data, dataset.train_target)
 
-        return np.mean((regr.predict(dataset.test_data) - dataset.test_target) ** 2)
+        return cls._score(regr.predict(dataset.test_data), dataset.test_target)
 
+
+def list_models():
+    return [cls for cls in globals().values()
+            if inspect.isclass(cls) and issubclass(cls, Model) and cls is not Model]
 
 if __name__ == "__main__":
-    import inspect
     import random
     from datasets import diabetes
 
     random.seed(1337)
-
-    for cls in globals().values():
-        if inspect.isclass(cls) and issubclass(cls, Model) and cls is not Model:
-            hyperparameters = tuple(random.random() for _ in range(cls.NUM_HYPERPARAMETERS))
-            print "Calling %s.fit(diabetes, (%s))" % (cls.__name__, ', '.join(map(str, hyperparameters)))
-            print cls.fit(diabetes, hyperparameters)
-            print
+    for model in list_models():
+        hyperparameters = tuple(random.random() for _ in range(model.NUM_HYPERPARAMETERS))
+        print "Calling %s.fit(diabetes, (%s))" % (model.__name__, ', '.join(map(str, hyperparameters)))
+        print model.fit(diabetes, hyperparameters)
+        print

@@ -9,10 +9,10 @@ construct a belief over the distribution of the latent function based on the
 observed points, followed by using an ancquisition function that leverages
 exploration/exploitation trade off to determine the next point to query.
 """
-__docformat__ = "restructuredtext en"
-
 import tensorflow as tf
 import numpy as np
+__docformat__ = "restructuredtext en"
+
 
 class BayesianOptimizer(object):
     """ Bayesian Optimization Class
@@ -69,7 +69,7 @@ class BayesianOptimizer(object):
         N/A : bool
             Boolean describing whether x is contained in the space  .
         """
-        return any([self.region[i, 0] <= x[i] <= self.region[i, 1]
+        return any([self.region[i, 0] <= x[0, i] <= self.region[i, 1]
                     for i in xrange(len(self.region))])
 
     def clip(self, x):
@@ -135,7 +135,9 @@ class BayesianOptimizer(object):
             # Break from gradient descent if outside of optimization region
             if not self.contains_point(self.sess.run(self.x)):
                 break
-        return (self.sess.run(self.x), self.sess.run(self.y_pred),
+        x = self.sess.run(self.x)
+        return (self.clip(x),
+                self.sess.run(self.y_pred),
                 self.sess.run(self.acq))
             
 def main_1d():
@@ -187,8 +189,8 @@ def main_1d():
             print "BOSelectDuration: {0:.5f}".format(time.time() - t1)
             if acq_cand > max_acq:
                 # Save best point
-                x_next= x_cand
-                y_next= y_cand
+                x_next = x_cand
+                y_next = y_cand
                 acq_next = acq_cand
         # Plot the selected point
         plt.plot([x_next[0,0], x_next[0,0]], plt.ylim(), 'r--')
