@@ -10,6 +10,7 @@ from sklearn import (
     datasets as skdatasets,
     preprocessing,
 )
+__docformat__ = "restructuredtext en"
 
 # Use 70-30
 TRAINING_SIZE_RATIO = 0.7
