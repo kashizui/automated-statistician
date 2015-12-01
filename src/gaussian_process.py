@@ -235,10 +235,8 @@ def main_2d():
     n_dim = 2
     # Get training samples
     X = np.float32(np.random.uniform(0, 10, [n_samples, n_dim]))
-    print X.shape
     y = np.float32((np.sin(np.sqrt(X).sum(1)).reshape([n_samples, 1])
                     + np.random.normal(0, .1, [n_samples, 1])))
-    print y.shape
     # Construct the kernel
     kernel = SquaredExponential(n_dim=n_dim,
                                 init_scale_range=(12.,12.),

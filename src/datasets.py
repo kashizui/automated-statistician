@@ -18,6 +18,9 @@ TRAINING_SIZE_RATIO = 0.7
 
 class Dataset(object):
     def __init__(self, data, target):
+        """
+        uses same format for data and target as sklearn
+        """
         self.data = data
         self.target = target
         self.sample_size = self.data.shape[0]
@@ -61,6 +64,8 @@ class Dataset(object):
             # TODO
             # return Dataset(x, y)
             pass
+
+
 
 
 # Preload some datasets here

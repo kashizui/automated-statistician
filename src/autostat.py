@@ -54,10 +54,19 @@ class ModelHistory(object):
 
     def sample(self):
         """sample an estimate of max performance and time based on the existing observations"""
-        pass
+        # build test points
+        mhp = np.meshgrid(*[np.linspace(0, 1., 100) for _ in xrange(self.model.NUM_HYPERPARAMETERS)])
+        hp = np.float32(np.hstack([row.ravel().reshape(-1, 1) for row in mhp]))
+
+        # fit GP and predict
+        self.gp.fit(self.hyperparameters, self.performance)
+        perf_pred, var = [self.gp.sess.run(tv) for tv in self.gp.predict(hp)]
+
+        max_i = np.argmax(perf_pred)
+        return perf_pred[max_i], var[max_i]
 
     def run(self):
-        """Actually run the model on the data and update history."""
+        """Actually run the model on the data with new hyperparameters and update history."""
         # Pick the set of hyperparameters that maximize the acquisition function
         if len(self.performance) == 0:
             # initialize in the center of the region
@@ -71,7 +80,7 @@ class ModelHistory(object):
 
         # Append new results to history
         self.hyperparameters = np.vstack([self.hyperparameters, hp_next])
-        self.performance = np.vstack([self.performance, np.float32(perf)])  # optimize the negative of MSE!!
+        self.performance = np.vstack([self.performance, np.float32(perf)])
         self.runtime = np.vstack([self.runtime, np.float32(runtime)])
 
     def plot(self):
@@ -129,7 +138,6 @@ class VirtualModelHistory(object):
         pass
 
 
-
 class AutomaticStatistician(object):
     # TODO: rollout evaluation
     # TODO: POMDP policy execution
@@ -140,10 +148,9 @@ class AutomaticStatistician(object):
     def test(self):
         # Runs bayesian optimizer on each model 10 times
         for model in self.models:
-            print model.model.__name__
             for _ in xrange(10):
                 model.run()
-
+            print model.sample()
             model.plot()
 
     def rollout(self, depth):

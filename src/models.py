@@ -35,16 +35,21 @@ class Model(object):
             dataset: the Dataset object to train and test
             hyperparameters: a tuple of hyperparameters of size matching output from cls.get_num_hyperparameters
 
-        Returns: (MSE, runtime in seconds)
+        Returns: (performance, runtime in seconds)
 
         """
         hp = cls._unpack(hyperparameters)
         print "%s(%s)" % (cls.__name__, ', '.join(["%s=%s" % (key, value) for key, value in hp.iteritems()]))
         tic = timeit.default_timer()
-        # performance = np.mean((cls._fit(dataset, **hp) - dataset.test_target) ** 2)
-        performance = metrics.r2_score(dataset.test_target, cls._fit(dataset, **hp))
+        performance = cls._fit(dataset, **hp)
         toc = timeit.default_timer()
         return performance, toc - tic
+
+    @classmethod
+    def _score(cls, pred_target, true_target):
+        # return np.mean((true_target - pred_target) ** 2)
+        # currently returning coefficient of determination:
+        return metrics.r2_score(true_target, pred_target)
 
     @classmethod
     def _unpack(cls, hyperparameters):
@@ -66,7 +71,7 @@ class Model(object):
             dataset: the Dataset object to train and test
             hyperparameters: a tuple of hyperparameters of size matching output from cls.get_num_hyperparameters
 
-        Returns: MSE
+        Returns: predicted targets for test set
 
         """
         raise NotImplementedError
@@ -94,7 +99,7 @@ class RandomForest(Model):
         # Train the model using the training sets
         regr.fit(dataset.train_data, dataset.train_target)
 
-        return regr.predict(dataset.test_data)
+        return cls._score(regr.predict(dataset.test_data), dataset.test_target)
 
 
 class SupportVectorRegression(Model):
@@ -122,7 +127,7 @@ class SupportVectorRegression(Model):
         # Train the model using the training sets
         regr.fit(dataset.train_data, dataset.train_target)
 
-        return regr.predict(dataset.test_data)
+        return cls._score(regr.predict(dataset.test_data), dataset.test_target)
 
 
 class LassoRegression(Model):
@@ -146,7 +151,7 @@ class LassoRegression(Model):
         # Train the model using the training sets
         regr.fit(dataset.train_data, dataset.train_target)
 
-        return regr.predict(dataset.test_data)
+        return cls._score(regr.predict(dataset.test_data), dataset.test_target)
 
 
 class RidgeRegression(Model):
@@ -170,7 +175,7 @@ class RidgeRegression(Model):
         # Train the model using the training sets
         regr.fit(dataset.train_data, dataset.train_target)
 
-        return regr.predict(dataset.test_data)
+        return cls._score(regr.predict(dataset.test_data), dataset.test_target)
 
 
 def list_models():
