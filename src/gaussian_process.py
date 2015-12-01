@@ -231,7 +231,7 @@ def main_2d():
     tf.set_random_seed(2)
     np.random.seed(2)
     # Settings
-    n_samples = 1
+    n_samples = 20
     n_dim = 2
     # Get training samples
     X = np.float32(np.random.uniform(0, 10, [n_samples, n_dim]))

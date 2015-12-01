@@ -178,6 +178,34 @@ class RidgeRegression(Model):
         return cls._score(regr.predict(dataset.test_data), dataset.test_target)
 
 
+class BetterModel(Model):
+    NUM_HYPERPARAMETERS = 1
+
+    @classmethod
+    def _unpack(cls, hyperparameters):
+        return {
+            "x": hyperparameters[0]
+        }
+
+    @classmethod
+    def _fit(cls, dataset, x):
+        return -(x - 0.5) ** 2 + 1.
+
+
+class WorseModel(Model):
+    NUM_HYPERPARAMETERS = 1
+
+    @classmethod
+    def _unpack(cls, hyperparameters):
+        return {
+            "x": hyperparameters[0]
+        }
+
+    @classmethod
+    def _fit(cls, dataset, x):
+        return -(x - 0.3) ** 2 + 0.5
+
+
 def list_models():
     return [cls for cls in globals().values()
             if inspect.isclass(cls) and issubclass(cls, Model) and cls is not Model]

@@ -66,8 +66,8 @@ class Dataset(object):
             pass
 
 
-
-
 # Preload some datasets here
 _diabetes = skdatasets.load_diabetes()
 diabetes = Dataset(_diabetes.data, _diabetes.target)
+
+
