@@ -215,7 +215,7 @@ def main_1d():
                          verbose=1)
     t0 = time.time()
     # Train GP on training data to learn length scales
-    for _ in xrange(1):
+    for _ in xrange(1000):
         track_time = time.time()
         gp.fit(X, y)
         print "Fit_Speed: {0:.5f}".format(time.time() - track_time)
@@ -227,7 +227,7 @@ def main_1d():
     # Make prediction
     X_new = np.float32(np.linspace(lim[0], lim[1], n_predict).reshape(-1,1))
     X_new = np.sort(X_new, axis=0)
-    for _ in xrange(100):
+    for _ in xrange(1000):
         track_time = time.time()
         y_pred, var = gp.np_predict(X_new)
         print "Predict_Run_Speed: {0:.5f}".format(time.time() - track_time)
@@ -300,4 +300,4 @@ def main_2d():
 
     
 if __name__ == "__main__":
-    main_2d()
+    main_1d()
