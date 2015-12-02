@@ -4,7 +4,7 @@ from src.bayesian_optimizer import *
 from src.kernels import *
 
 # Data
-from sklearn.datasets import make_classification
+from sklearn.datasets import make_classification, load_digits
 
 # Models
 from sklearn.ensemble import RandomForestClassifier
@@ -36,8 +36,8 @@ gp = GaussianProcess(n_epochs=100,
                      verbose=0)
 
 # Generate data
-data = make_classification(n_samples=1000,
-                           n_features=1000,
+data = make_classification(n_samples=10000,
+                           n_features=100,
                            n_informative=5,
                            n_redundant=2,
                            n_repeated=0,
@@ -60,9 +60,13 @@ X_train, X_test, y_train, y_test = train_test_split(X, y,
                                                     test_size=0.33,
                                                     random_state=42)
 
+
+sklearn.datasets.load_digits(n_class=10)
+
+
 def l1_logit(show_plot):
     logit_results = []
-    Cs = np.exp(np.linspace(-10, 10, 20))
+    Cs = np.exp(np.linspace(-5, 5, 20))
     for C in Cs:
         y_pred = LogisticRegression(penalty='l1', C=C).fit(X_train, y_train).predict_proba(X_test)[:,1]
         mini_result =  roc_auc_score(y_test, y_pred)
@@ -77,7 +81,7 @@ def l1_logit(show_plot):
 
 def l2_logit(show_plot):
     logit_results = []
-    Cs = np.exp(np.linspace(-10, 10, 20))
+    Cs = np.exp(np.linspace(-5, 5, 20))
     for C in Cs:
         y_pred = LogisticRegression(C=C).fit(X_train, y_train).predict_proba(X_test)[:,1]
         mini_result =  roc_auc_score(y_test, y_pred)
@@ -92,7 +96,7 @@ def l2_logit(show_plot):
 
 def svc(show_plot):
     svc_results = []
-    Cs = np.exp(np.linspace(-10, 10, 20))
+    Cs = np.exp(np.linspace(-5, 5, 20))
     for C in Cs:
         y_pred = SVC(C=C, probability=True).fit(X_train, y_train).predict_proba(X_test)[:,1]
         mini_result =  roc_auc_score(y_test, y_pred)
