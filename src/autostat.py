@@ -20,69 +20,58 @@ from tictoc import tic, toc
 __docformat__ = "restructuredtext en"
 
 
+class BeliefSlice(object):
+    """
+    Represents the slice of the GP, presumably where the acquisition function is maximized.
+    """
+    def __init__(self, hp, perf_mean, perf_std):
+        self.hp = hp
+        self.perf_mean = perf_mean
+        self.perf_std = perf_std
+
+
 class ModelHistory(object):
     """
     Runs the given model and maintains the performance and time data.
 
     Essentially maintains belief state for the given model.
     """
-    def __init__(self, model, dataset, hyperparameters, performance, runtime):
+    def __init__(self, model, dataset, hyperparameters, performance, runtime, bo, gp):
         self.model = model
         self.dataset = dataset
         self.hyperparameters = hyperparameters
         self.performance = performance
         self.runtime = runtime
+        self.bo = bo
+        self.gp = gp
+        self.belief = self.reslice_belief()
 
-        # Settings
-        batch_size = 4
-        # create bayesian optimizer and gassian process
-        self.kernel = SquaredExponential(n_dim=model.NUM_HYPERPARAMETERS,
-                                         init_scale_range=(.5, 1),
-                                         init_amp=1.)
-
-        self.gp = GaussianProcess(n_epochs=100,
-                                  batch_size=batch_size,
-                                  n_dim=model.NUM_HYPERPARAMETERS,
-                                  kernel=self.kernel,
-                                  noise=0.01,
-                                  train_noise=False,
-                                  optimizer=tf.train.GradientDescentOptimizer(0.001),
-                                  verbose=0)
-
-        self.bo = BayesianOptimizer(self.gp,
-                                    region=np.array([[0., 1.] for _ in xrange(model.NUM_HYPERPARAMETERS)]),
-                                    iters=100,
-                                    optimizer=tf.train.GradientDescentOptimizer(0.1),
-                                    verbose=0)
-
-        if len(self.performance) > 0:
-            self.bo.fit(self.hyperparameters, self.performance)
-
-    def belief(self):
+    def reslice_belief(self):
         """
-        Get the univariate belief distribution of the performance
+        Get the univariate belief distribution of the performance (the slice)
         TODO: runtime
         """
         if len(self.performance) == 0:
             # initialize in the center of the region
             # TODO: with noise?
             hp = np.float32([[0.5 for _ in xrange(self.model.NUM_HYPERPARAMETERS)]])
-            return hp, 1., np.sqrt(np.sqrt(0.1))
+            return BeliefSlice(hp, 1., np.sqrt(np.sqrt(0.1)))  # FIXME should use fourth root of noise of GP below
 
-        # select slice at max of acquisition function
+        # Fit GP
+        self.bo.fit(self.hyperparameters, self.performance)
+
+        # Select slice at max of acquisition function
         hp, perf, acq = self.bo.select()
-        std = (acq - perf) / 2.  # assuming UCB acquisition function
         perf, var = self.gp.np_predict(hp)
 
-        return hp, perf, std
+        # Save in model history state
+        return BeliefSlice(hp, perf, np.max(np.sqrt(var), np.float32(0.001)))
 
     def sample(self, size=1):
         """
         sample an estimate of best performance and time based on the existing observations
         """
-        hp, perf, std = self.belief()
-
-        return hp, np.random.normal(perf, std, size)  # TODO: sample runtime
+        return self.belief.hp, np.random.normal(self.belief.perf_mean, self.belief.perf_std, size)  # TODO: sample runtime
 
     def update(self, hp, perf, runtime):
         """
@@ -91,21 +80,17 @@ class ModelHistory(object):
         self.hyperparameters = np.vstack([self.hyperparameters, np.float32(hp)])
         self.performance = np.vstack([self.performance, np.float32(perf)])
         self.runtime = np.vstack([self.runtime, np.float32(runtime)])
-        # refit BO
-        self.bo.fit(self.hyperparameters, self.performance)
+        self.belief = self.reslice_belief()
 
     def run(self):
         """
         Actually run the model on the data with new hyperparameters and update history.
         """
-        # Pick the set of hyperparameters that maximize the acquisition function
-        hp_next, _, _ = self.belief()
-
         # Run model
-        perf, runtime = self.model.fit(self.dataset, tuple(hp_next[0]))
+        perf, runtime = self.model.fit(self.dataset, tuple(self.belief.hp[0]))
 
         # Append new results to history
-        self.update(hp_next, perf, runtime)
+        self.update(self.belief.hp, perf, runtime)
 
     def plot(self):
         if self.model.NUM_HYPERPARAMETERS > 1:
@@ -132,7 +117,7 @@ class ModelHistory(object):
             plt.show()
 
     @classmethod
-    def new(cls, model, dataset):
+    def new(cls, model, dataset, bo, gp):
         """
         Return a fresh instance with no datapoints.
         """
@@ -140,7 +125,9 @@ class ModelHistory(object):
                    dataset,
                    np.empty((0, model.NUM_HYPERPARAMETERS), dtype=np.float32),
                    np.empty((0, 1), dtype=np.float32),
-                   np.empty((0, 1), dtype=np.float32))
+                   np.empty((0, 1), dtype=np.float32),
+                   bo,
+                   gp)
 
     def copy(self):
         """
@@ -150,40 +137,52 @@ class ModelHistory(object):
                             self.dataset,
                             np.copy(self.hyperparameters),
                             np.copy(self.performance),
-                            np.copy(self.runtime))
+                            np.copy(self.runtime),
+                            self.bo,
+                            self.gp)
 
 
 class AutomaticStatistician(object):
 
     def __init__(self, dataset, discount=0.9):
-        self.models = [ModelHistory.new(model, dataset) for model in models.list_models()]
         self.discount = discount
 
-    def test(self):
-        # Runs bayesian optimizer on each model 10 times
-        self.models = [ModelHistory.new(model, None) for model in [models.BetterModel, models.WorseModel]]
+        # Settings
+        batch_size = 4
+        # create bayesian optimizer and gassian process
+        self.kernel = SquaredExponential(n_dim=1,  # assuming 1 hyperparameter
+                                         init_scale_range=(.5, 1),
+                                         init_amp=1.)
 
+        self.gp = GaussianProcess(n_epochs=100,
+                                  batch_size=batch_size,
+                                  n_dim=1,  # assuming 1 hyperparameter
+                                  kernel=self.kernel,
+                                  noise=0.01,
+                                  train_noise=False,
+                                  optimizer=tf.train.GradientDescentOptimizer(0.001),
+                                  verbose=0)
+
+        self.bo = BayesianOptimizer(self.gp,
+                                    region=np.array([[0., 1.]]),  # assuming 1 hyperparameter
+                                    iters=100,
+                                    optimizer=tf.train.GradientDescentOptimizer(0.1),
+                                    verbose=0)
+
+        self.models = [ModelHistory.new(model, dataset, self.bo, self.gp) for model in models.list_models()]
+
+    def test(self):
+        self.models = [ModelHistory.new(model, None, self.bo, self.gp) for model in models.list_dummy_models()]
+
+        # do multi-armed bandit for 10 iterations
         for _ in xrange(10):
             selected_i = self.select()
             print "selecting %s" % self.models[selected_i].model.__name__
             self.models[selected_i].run()
 
-        # for model in self.models:
-        #     for _ in xrange(3):
-        #         model.run()
-
-        # print self.rollout(depth=4)
-        # print self.estimated_reward(self.models, 0)
-        # print self.estimated_reward(self.models, 1)
-        #
-        # for model in self.models:
-        #     for _ in xrange(7):
-        #         model.run()
-        #
-        # # print self.rollout(depth=4)
-        #
-        # print self.estimated_reward(self.models, 0)
-        # print self.estimated_reward(self.models, 1)
+        # plot resulting beliefs
+        for m in self.models:
+            m.plot()
 
     def reward(self, models, perf):
         """
@@ -236,7 +235,7 @@ class AutomaticStatistician(object):
             hp, perf = samples[selected_i]
 
             # (s', o, r) ~ G(s, a)
-            new_perf = np.random.normal(perf, np.sqrt(np.sqrt(0.1)))
+            new_perf = np.random.normal(perf, np.sqrt(np.sqrt(0.1)))  # FIXME should use fourth root of noise to GP
 
             # b' <- UpdateBelief(b, a, o)
             selected_model.update(hp, new_perf, 0)

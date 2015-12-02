@@ -109,20 +109,18 @@ class SupportVectorRegression(Model):
         width of epsilon-tube wiggle room
 
     """
-    NUM_HYPERPARAMETERS = 2
+    NUM_HYPERPARAMETERS = 1
 
     @classmethod
     def _unpack(cls, hyperparameters):
-        penalty, epsilon = hyperparameters
+        penalty, = hyperparameters
         return {
             "penalty": max(10 ** (2 * penalty), 0.001),  # FIXME what range should this expand to? currently [0, 1]
-            "epsilon": epsilon,  # FIXME what range should this expand to? currently [0, 1]
         }
 
     @classmethod
-    def _fit(cls, dataset, penalty, epsilon):
-        print "SVR(C=%f, epsilon=%f)" % (penalty, epsilon)
-        regr = svm.SVR(kernel='rbf', C=penalty, epsilon=epsilon)
+    def _fit(cls, dataset, penalty):
+        regr = svm.SVR(kernel='rbf', C=penalty)
 
         # Train the model using the training sets
         regr.fit(dataset.train_data, dataset.train_target)
@@ -207,8 +205,10 @@ class WorseModel(Model):
 
 
 def list_models():
-    return [cls for cls in globals().values()
-            if inspect.isclass(cls) and issubclass(cls, Model) and cls is not Model]
+    return [RandomForest, SupportVectorRegression, LassoRegression, RidgeRegression]
+
+def list_dummy_models():
+    return [BetterModel, WorseModel]
 
 if __name__ == "__main__":
     import random
