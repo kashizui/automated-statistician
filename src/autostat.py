@@ -41,7 +41,7 @@ class ModelHistory(object):
                                   batch_size=batch_size,
                                   n_dim=model.NUM_HYPERPARAMETERS,
                                   kernel=self.kernel,
-                                  noise=0.1,
+                                  noise=0.01,
                                   train_noise=False,
                                   optimizer=tf.train.GradientDescentOptimizer(0.001),
                                   verbose=0)
@@ -60,7 +60,7 @@ class ModelHistory(object):
 
         # fit GP and predict
         self.gp.fit(self.hyperparameters, self.performance)
-        perf_pred, var = [self.gp.sess.run(tv) for tv in self.gp.predict(hp)]
+        perf_pred, var = self.gp.np_predict(hp)
 
         max_i = np.argmax(perf_pred)
         return perf_pred[max_i], var[max_i]
@@ -95,9 +95,7 @@ class ModelHistory(object):
         # predict performance mean function
         hp = np.float32(np.linspace(0, 1, 100).reshape(-1, 1))
         hp = np.sort(hp, axis=0)
-        perf_pred, var = self.gp.predict(hp)
-        perf_pred = self.gp.sess.run(perf_pred)
-        var = self.gp.sess.run(var)
+        perf_pred, var = self.gp.np_predict(hp)
         ci = np.sqrt(var)*2
 
         # plot mean function, CI, and actual samples
