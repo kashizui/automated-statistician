@@ -62,6 +62,9 @@ class BayesianOptimizer(object):
         self.acq = self.y_pred + 2*tf.sqrt(self.var)
         # Define the optimization task: maximizing acq w.r.t. self.x
         self.train = self.opt.minimize(-self.acq, var_list=[self.x])
+        # placeholder for final
+        self.x_placeholder = tf.placeholder(tf.float32, [None, None])
+        self.assign_to_x = tf.assign(self.x, self.x_placeholder)
 
     def contains_point(self, x):
         """ Checks if x is contained within the optimization task region.
@@ -140,10 +143,8 @@ class BayesianOptimizer(object):
                 break
         # Generate final x
         self.sess.run(
-            tf.assign(
-                self.x,
-                self.clip(self.sess.run(self.x))
-            )
+            self.assign_to_x,
+            feed_dict = {self.x_placeholder : self.clip(self.sess.run(self.x))}
         )
         return (self.sess.run(self.x),
                 self.sess.run(self.y_pred, self.gp_dict),
@@ -155,7 +156,7 @@ def main_1d():
     import matplotlib.pyplot as plt
     import time
     # Settings
-    n_samples = 10
+    n_samples = 20
     batch_size = 4
     new_samples = 100
     n_dim = 1
@@ -174,7 +175,7 @@ def main_1d():
     bo = BayesianOptimizer(gp, region=np.array([[0., 3.]]),
                            iters=100,
                            optimizer=tf.train.GradientDescentOptimizer(0.1),
-                           verbose=1)
+                           verbose=0)
     # Define the latent function + noise
     def observe(X):
         y = np.float32((np.sin(X.sum(1)).reshape([X.shape[0], 1]) +
@@ -186,8 +187,8 @@ def main_1d():
     plt.axis((0, 3, -3, 3))
     # Fit the gp
     bo.fit(X, y)
-    for i in xrange(10):
-        print "Iteration {0:3d}".format(i) + "*"*80
+    for i in xrange(100):
+        # print "Iteration {0:3d}".format(i) + "*"*80
         t0 = time.time()
         max_acq = -np.inf
         # Inner loop to allow for gd with random initializations multiple times
@@ -206,14 +207,14 @@ def main_1d():
         plt.scatter(x_next, y_next, c='r', linewidths=0, s=50)
         plt.scatter(x_next, acq_next, c='g', linewidths=0, s=50)
         # Observe and add point to observed data
-        y_obs = observe(x_next)
-        X = np.vstack((X, x_next))
-        y = np.vstack((y, y_obs))
+        # y_obs = observe(x_next)
+        # X = np.vstack((X, x_next))
+        # y = np.vstack((y, y_obs))
         t2 = time.time()
         # Fit again
         bo.fit(X, y)
-        print "BOFitDuration: {0:.5f}".format(time.time() - t2)
-        print "BOTotalDuration: {0:.5f}".format(time.time() - t0)
+        # print "BOFitDuration: {0:.5f}".format(time.time() - t2)
+        # print "BOTotalDuration: {0:.5f}".format(time.time() - t0)
     # Get the final posterior mean and variance for the entire domain space
     X_new = np.float32(np.linspace(0, 3, new_samples).reshape(-1, 1))
     X_new = np.sort(X_new, axis=0)
