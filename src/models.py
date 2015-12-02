@@ -39,10 +39,11 @@ class Model(object):
 
         """
         hp = cls._unpack(hyperparameters)
-        print "%s(%s)" % (cls.__name__, ', '.join(["%s=%s" % (key, value) for key, value in hp.iteritems()]))
+        # print "%s(%s)" % (cls.__name__, ', '.join(["%s=%s" % (key, value) for key, value in hp.iteritems()]))
         tic = timeit.default_timer()
         performance = cls._fit(dataset, **hp)
         toc = timeit.default_timer()
+        print "%s(%s) => (%s, %s)" % (cls.__name__, ', '.join(["%s=%s" % (key, value) for key, value in hp.iteritems()]), performance, toc - tic)
         return performance, toc - tic
 
     @classmethod
