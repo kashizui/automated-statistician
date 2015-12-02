@@ -20,7 +20,6 @@ from tictoc import tic, toc
 
 __docformat__ = "restructuredtext en"
 
-
 class BeliefSlice(object):
     """
     Represents the slice of the GP, presumably where the acquisition function is maximized.
@@ -109,7 +108,7 @@ class ModelHistory(object):
         self.gp.fit(self.hyperparameters, self.performance)
 
         # predict performance mean function
-        hp = np.float32(np.linspace(0, 1, 100).reshape(-1, 1))
+        hp = np.float32(np.linspace(0, 1, 1000).reshape(-1, 1))
         hp = np.sort(hp, axis=0)
         perf_pred, var = self.gp.np_predict(hp)
         ci = np.sqrt(var)*2
@@ -121,6 +120,7 @@ class ModelHistory(object):
             plt.plot(hp, perf_pred+ci, 'g--')
             plt.plot(hp, perf_pred-ci, 'g--')
             plt.scatter(self.hyperparameters, self.performance)
+            plt.title(self.model.__name__)
             plt.show()
 
     @classmethod
@@ -155,17 +155,17 @@ class AutomaticStatistician(object):
         self.discount = discount
 
         # Settings
-        batch_size = 4
+        batch_size = 10
         # create bayesian optimizer and gassian process
         self.kernel = SquaredExponential(n_dim=1,  # assuming 1 hyperparameter
-                                         init_scale_range=(.5, 1),
+                                         init_scale_range=(.1, .5),
                                          init_amp=1.)
 
         self.gp = GaussianProcess(n_epochs=100,
                                   batch_size=batch_size,
                                   n_dim=1,  # assuming 1 hyperparameter
                                   kernel=self.kernel,
-                                  noise=0.01,
+                                  noise=0.05,
                                   train_noise=False,
                                   optimizer=tf.train.GradientDescentOptimizer(0.001),
                                   verbose=0)
@@ -173,16 +173,19 @@ class AutomaticStatistician(object):
         self.bo = BayesianOptimizer(self.gp,
                                     region=np.array([[0., 1.]]),  # assuming 1 hyperparameter
                                     iters=100,
+                                    tries=2,
                                     optimizer=tf.train.GradientDescentOptimizer(0.1),
                                     verbose=0)
-
+        self.n_queries = 20
+        self.depth = 1
+        self.n_sim = 1
         self.models = [ModelHistory.new(model, dataset, self.bo, self.gp) for model in models.list_models()]
 
     def test(self):
-        self.models = [ModelHistory.new(model, None, self.bo, self.gp) for model in models.list_dummy_models()]
-
+        self.models = [ModelHistory.new(model, None, self.bo, self.gp)
+                       for model in models.list_dummy_models()]
         # do multi-armed bandit for 10 iterations
-        for _ in xrange(10):
+        for _ in xrange(self.n_queries):
             selected_i = self.select()
             print "selecting %s" % self.models[selected_i].model.__name__
             self.models[selected_i].run()
@@ -211,12 +214,12 @@ class AutomaticStatistician(object):
         """
         # Yields U(UpdateBelief(b, a, o)) for N sample observations
         def action_observation_values(i):
-            for iters in xrange(5):  # 5 sample observations
+            for iters in xrange(self.n_sim):  # 5 sample observations
                 tic("Sample observation %d for model %d" % (iters, i))
                 virtual_models = [m.copy() for m in self.models]
                 hp, perf = virtual_models[i].sample()
                 virtual_models[i].update(hp, perf, 0)  # FIXME
-                yield self.rollout(virtual_models, 3)
+                yield self.rollout(virtual_models, self.depth)
                 toc()
 
         # Equation (6.35)
