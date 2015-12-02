@@ -16,6 +16,7 @@ from sklearn import (
     linear_model,
     ensemble,
     metrics,
+    preprocessing,
 )
 __docformat__ = "restructuredtext en"
 
@@ -48,9 +49,7 @@ class Model(object):
 
     @classmethod
     def _score(cls, pred_target, true_target):
-        # return np.mean((true_target - pred_target) ** 2)
-        # currently returning coefficient of determination:
-        return metrics.r2_score(true_target, pred_target)
+        raise NotImplementedError
 
     @classmethod
     def _unpack(cls, hyperparameters):
@@ -78,7 +77,85 @@ class Model(object):
         raise NotImplementedError
 
 
-class RandomForest(Model):
+class RegressionModel(Model):
+    @classmethod
+    def _score(cls, pred_target, true_target):
+        # return np.mean((true_target - pred_target) ** 2)
+        # currently returning coefficient of determination:
+        return metrics.r2_score(true_target, pred_target)
+
+
+class ClassificationModel(Model):
+    @classmethod
+    def _score(cls, pred_target, true_target):
+        # FIXME this is iffy, if a class label happens to be missing from either true_target or pred_target
+        lb = preprocessing.LabelBinarizer()
+        lb.fit(np.concatenate([true_target, pred_target]))
+        # ROC AUC score
+        return metrics.roc_auc_score(lb.transform(true_target), lb.transform(pred_target))
+
+
+class SupportVectorClassifier(ClassificationModel):
+    NUM_HYPERPARAMETERS = 1
+
+    @classmethod
+    def _unpack(cls, hyperparameters):
+        return {
+            'penalty': np.exp(20. * hyperparameters[0] - 10.),
+        }
+
+    @classmethod
+    def _fit(cls, dataset, **hp):
+        classifier = svm.SVC(kernel='rbf', C=hp['penalty'])
+
+        # Train the model using the training set
+        classifier.fit(dataset.train_data, dataset.train_target)
+
+        # Return score on test set
+        return cls._score(classifier.predict(dataset.test_data), dataset.test_target)
+
+
+class LogitL1(ClassificationModel):
+    NUM_HYPERPARAMETERS = 1
+
+    @classmethod
+    def _unpack(cls, hyperparameters):
+        return {
+            'penalty': np.exp(20. * hyperparameters[0] - 10.),
+        }
+
+    @classmethod
+    def _fit(cls, dataset, **hp):
+        classifier = linear_model.LogisticRegression(penalty='l1', C=hp['penalty'])
+
+        # Train the model using the training set
+        classifier.fit(dataset.train_data, dataset.train_target)
+
+        # Return score on test set
+        return cls._score(classifier.predict(dataset.test_data), dataset.test_target)
+
+
+class LogitL2(ClassificationModel):
+    NUM_HYPERPARAMETERS = 1
+
+    @classmethod
+    def _unpack(cls, hyperparameters):
+        return {
+            'penalty': np.exp(20. * hyperparameters[0] - 10.),
+        }
+
+    @classmethod
+    def _fit(cls, dataset, **hp):
+        classifier = linear_model.LogisticRegression(penalty='l2', C=hp['penalty'])
+
+        # Train the model using the training set
+        classifier.fit(dataset.train_data, dataset.train_target)
+
+        # Return score on test set
+        return cls._score(classifier.predict(dataset.test_data), dataset.test_target)
+
+
+class RandomForest(RegressionModel):
     """
     Hyperparameters available are:
         number of trees
@@ -103,7 +180,7 @@ class RandomForest(Model):
         return cls._score(regr.predict(dataset.test_data), dataset.test_target)
 
 
-class SupportVectorRegression(Model):
+class SupportVectorRegression(RegressionModel):
     """
     Hyperparameters available are:
         penalty
@@ -129,7 +206,7 @@ class SupportVectorRegression(Model):
         return cls._score(regr.predict(dataset.test_data), dataset.test_target)
 
 
-class LassoRegression(Model):
+class LassoRegression(RegressionModel):
     """
     Hyperparameters available are:
         alpha (or lambda) for lasso regression
@@ -153,7 +230,7 @@ class LassoRegression(Model):
         return cls._score(regr.predict(dataset.test_data), dataset.test_target)
 
 
-class RidgeRegression(Model):
+class RidgeRegression(RegressionModel):
     """
     Hyperparameters available are:
         alpha (or lambda) for ridge/tikhonov regression
@@ -205,19 +282,27 @@ class WorseModel(Model):
         return -(x - 0.3) ** 2 + 0.5
 
 
-def list_models():
+def list_classification_models():
+    return [SupportVectorClassifier, LogitL1, LogitL2]
+
+
+def list_regression_models():
     return [RandomForest, SupportVectorRegression, LassoRegression, RidgeRegression]
+
 
 def list_dummy_models():
     return [BetterModel, WorseModel]
 
+
 if __name__ == "__main__":
     import random
-    from datasets import diabetes
+    from datasets import diabetes, iris
 
     random.seed(1337)
-    for model in list_models():
+    for model in list_regression_models():
         hyperparameters = tuple(random.random() for _ in range(model.NUM_HYPERPARAMETERS))
-        print "Calling %s.fit(diabetes, (%s))" % (model.__name__, ', '.join(map(str, hyperparameters)))
-        print model.fit(diabetes, hyperparameters)
-        print
+        model.fit(diabetes, hyperparameters)
+
+    for model in list_classification_models():
+        hyperparameters = tuple(random.random() for _ in range(model.NUM_HYPERPARAMETERS))
+        model.fit(iris, hyperparameters)
