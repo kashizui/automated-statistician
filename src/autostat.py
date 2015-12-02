@@ -9,6 +9,7 @@ Should, given a dataset, choose the best model.
 """
 import numpy as np
 import tensorflow as tf
+from tensorflow.python.framework.errors import InvalidArgumentError
 
 import models
 from bayesian_optimizer import BayesianOptimizer
@@ -58,14 +59,20 @@ class ModelHistory(object):
             return BeliefSlice(hp, 1., np.sqrt(np.sqrt(0.1)))  # FIXME should use fourth root of noise of GP below
 
         # Fit GP
-        self.bo.fit(self.hyperparameters, self.performance)
+        try:
+            self.bo.fit(self.hyperparameters, self.performance)
+        except InvalidArgumentError:
+            print "The offending data:"
+            print self.hyperparameters
+            print self.performance
+            raise
 
         # Select slice at max of acquisition function
         hp, perf, acq = self.bo.select()
         perf, var = self.gp.np_predict(hp)
 
         # Save in model history state
-        return BeliefSlice(hp, perf, np.max(np.sqrt(var), np.float32(0.001)))
+        return BeliefSlice(hp, perf, np.max([np.sqrt(var), np.float32(0.001)]))
 
     def sample(self, size=1):
         """
