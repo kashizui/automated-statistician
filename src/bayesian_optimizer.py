@@ -45,16 +45,23 @@ class BayesianOptimizer(object):
         self.region = region
         # Get the session from the GP object
         self.sess = self.gp.sess
+        # Define optimization algorithm
+        self.opt = optimizer
+        self.iters = iters
+        self.verbose = verbose
+
         # FIXME
         # x marks the query location of the next point. Currently not robustly
         # written. Must rewrite later.
         # We assume here that we've scaled the hyperparameter space to the unit hypercube.
         self.x = tf.Variable(tf.random_uniform([1, len(self.region)],
                                                minval=0, maxval=1))
-        # Define optimization algorithm
-        self.opt = optimizer
-        self.iters = iters
-        self.verbose = verbose
+        # Get the tensor variables for prediction at x
+        self.y_pred, self.var = self.gp.tf_predict(self.x)
+        # Define the acquisition function, which in our case is just the UCB
+        self.acq = self.y_pred + 2*tf.sqrt(self.var)
+        # Define the optimization task: maximizing acq w.r.t. self.x
+        self.train = self.opt.minimize(-self.acq, var_list=[self.x])
 
     def contains_point(self, x):
         """ Checks if x is contained within the optimization task region.
@@ -105,13 +112,9 @@ class BayesianOptimizer(object):
             The response variable
         """
         self.gp.fit(X, y)
-        # Get the tensor variables for prediction at x
-        self.y_pred, self.cov = self.gp.predict(self.x)
-        # Define the acquisition function, which in our case is just the UCB
-        self.acq = self.y_pred + 2*tf.sqrt(self.cov)
-        # Define the optimization task: maximizing acq w.r.t. self.x
-        self.train = self.opt.minimize(-self.acq, var_list=[self.x])
-
+        self.gp_dict = {self.gp.X : self.gp.Xf,
+                        self.gp.y : self.gp.yf,
+                        self.gp.np_K_inv : self.gp.K_invf}
     def select(self):
         """ Select a point that maximizes the acquisition function. Finds this
         point via gradient descend of -acq.
@@ -129,16 +132,22 @@ class BayesianOptimizer(object):
         self.sess.run(tf.initialize_variables([self.x]))
         if self.verbose > 0:
             print "BOPoint:", self.sess.run(self.x)[0]
-            print "BOAcquisition:", self.sess.run(self.acq)[0,0]
+            print "BOAcquisition:", self.sess.run(self.acq, feed_dict=self.gp_dict)[0,0]
         for _ in xrange(self.iters):
-            self.sess.run(self.train)
+            self.sess.run(self.train, feed_dict=self.gp_dict)
             # Break from gradient descent if outside of optimization region
             if not self.contains_point(self.sess.run(self.x)):
                 break
-        x = self.sess.run(self.x)
-        return (self.clip(x),
-                self.sess.run(self.y_pred),
-                self.sess.run(self.acq))
+        # Generate final x
+        self.sess.run(
+            tf.assign(
+                self.x,
+                self.clip(self.sess.run(self.x))
+            )
+        )
+        return (self.sess.run(self.x),
+                self.sess.run(self.y_pred, self.gp_dict),
+                self.sess.run(self.acq, self.gp_dict))
             
 def main_1d():
     from kernels import SquaredExponential
@@ -146,7 +155,7 @@ def main_1d():
     import matplotlib.pyplot as plt
     import time
     # Settings
-    n_samples = 1
+    n_samples = 10
     batch_size = 4
     new_samples = 100
     n_dim = 1
@@ -162,7 +171,7 @@ def main_1d():
                          train_noise=False,
                          optimizer=tf.train.GradientDescentOptimizer(0.001),
                          verbose=0)
-    bo = BayesianOptimizer(gp, region=np.array([[0., 10.]]),
+    bo = BayesianOptimizer(gp, region=np.array([[0., 3.]]),
                            iters=100,
                            optimizer=tf.train.GradientDescentOptimizer(0.1),
                            verbose=1)
@@ -172,12 +181,12 @@ def main_1d():
                         np.random.normal(0,.1, [X.shape[0], 1])))
         return y
     # Get data
-    X = np.float32(np.random.uniform(1, 10, [n_samples, n_dim]))
+    X = np.float32(np.random.uniform(0, 1, [n_samples, n_dim]))
     y = observe(X)
-    plt.axis((0, 10, -3, 3))
+    plt.axis((0, 3, -3, 3))
     # Fit the gp
     bo.fit(X, y)
-    for i in xrange(20):
+    for i in xrange(10):
         print "Iteration {0:3d}".format(i) + "*"*80
         t0 = time.time()
         max_acq = -np.inf
@@ -206,11 +215,9 @@ def main_1d():
         print "BOFitDuration: {0:.5f}".format(time.time() - t2)
         print "BOTotalDuration: {0:.5f}".format(time.time() - t0)
     # Get the final posterior mean and variance for the entire domain space
-    X_new = np.float32(np.linspace(0, 10, new_samples).reshape(-1, 1))
+    X_new = np.float32(np.linspace(0, 3, new_samples).reshape(-1, 1))
     X_new = np.sort(X_new, axis=0)
-    y_pred, cov = gp.predict(X_new)
-    y_pred = gp.sess.run(y_pred)
-    var = gp.sess.run(cov)
+    y_pred, var = gp.np_predict(X_new)
     # Compute the confidence interval
     ci = np.sqrt(var)*2
     plt.plot(X_new, y_pred)
