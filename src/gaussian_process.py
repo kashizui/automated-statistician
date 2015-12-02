@@ -93,6 +93,18 @@ class GaussianProcess(object):
             )       
         )
 
+        # Variables for numpy prediction:
+        self.np_X_ = tf.placeholder(tf.float32, [None, None])
+        self.np_K_inv = tf.placeholder(tf.float32, [None, None])
+        np_K_ = self.kernel.covariance(self.np_X_, self.X) 
+        np_K_K_inv = tf.matmul(np_K_, self.np_K_inv)
+        self.np_y_pred = tf.matmul(np_K_K_inv, self.y)        
+        self.np_var = var = tf.abs(tf.reshape(
+            tf.square(self.kernel.amp)
+            - tf.reduce_sum(tf.mul(np_K_K_inv, np_K_), 1),
+            [-1,1]
+        ))
+
     def fit(self, X, y):
         """ Fit the gaussian process based on observed data (X, y)
 
@@ -131,8 +143,20 @@ class GaussianProcess(object):
                                     feed_dict={self.X: X, self.y: y})
         self.Xf = X
         self.yf = y
-        
-    def predict(self, X):
+
+    def tf_predict(self, tf_X_):
+        # Variables for tensor prediction:
+        tf_K_ = self.kernel.covariance(tf_X_, self.X) 
+        tf_K_K_inv = tf.matmul(tf_K_, self.np_K_inv)
+        tf_y_pred = tf.matmul(tf_K_K_inv, self.y)        
+        tf_var = var = tf.abs(tf.reshape(
+            tf.square(self.kernel.amp)
+            - tf.reduce_sum(tf.mul(tf_K_K_inv, tf_K_), 1),
+            [-1,1]
+        ))
+        return tf_y_pred, tf_var
+    
+    def np_predict(self, X):
         """ Predict latent function evaluation and latent function variance at X
 
         Parameters
@@ -147,20 +171,16 @@ class GaussianProcess(object):
         var : tf nd.array. shape = (n_samples, 1)
             The latent function variance
         """
-        # K(X, X*)
-        K_ = self.kernel.covariance(X, self.Xf)
-        # K(X, X*)[K(X, X) + sigma^2]^-1
-        K_K_invf = tf.matmul(K_, self.K_invf)
-        # Posterior mean
-        y_pred = tf.matmul(K_K_invf, self.yf)
-        # Posterior variance
-        var = tf.abs(tf.reshape(
-            tf.square(self.kernel.amp)
-            - tf.reduce_sum(tf.mul(K_K_invf, K_), 1),
-            [-1,1]
-        ))
-        return y_pred, var
-
+        return (self.sess.run(self.np_y_pred,
+                         feed_dict = {self.np_X_ : X,
+                                      self.X : self.Xf,
+                                      self.y : self.yf,
+                                      self.np_K_inv : self.K_invf}),
+                self.sess.run(self.np_var,
+                         feed_dict = {self.np_X_ : X,
+                                      self.X : self.Xf,
+                                      self.y : self.yf,
+                                      self.np_K_inv : self.K_invf}))
     
 def main_1d():
     """ Use Gaussian process regression to perform a 1D function regression task
@@ -169,24 +189,24 @@ def main_1d():
     import time
     import matplotlib.pyplot as plt
     # Settings
-    n_samples = 28              # number of samples to train GP on 
+    n_samples = 5              # number of samples to train GP on 
     n_predict = 400             # number of samples for prediction
     n_dim = 1                   # 1D regression task
-    lim = [0, 1]
+    lim = [0, 3]
     # Set seed
-    tf.set_random_seed(2)
-    np.random.seed(2)
+    tf.set_random_seed(1)
+    np.random.seed(1)
     # Generate n_samples
     X = np.float32(np.random.uniform(lim[0], lim[1], [n_samples, n_dim]))
     y = np.float32((np.sin(X.sum(1)).reshape([n_samples, 1]) +
          np.random.normal(0,.1, [n_samples, 1])))
     # Create the kernel for GP
     kernel = SquaredExponential(n_dim=n_dim,
-                                init_scale_range=(.01,.01),
+                                init_scale_range=(.1,1),
                                 init_amp=1.)
     # Create the GP object
     gp = GaussianProcess(n_epochs=10,
-                         batch_size=n_samples,
+                         batch_size=10,
                          n_dim=n_dim,
                          kernel=kernel,
                          noise=.1,
@@ -195,22 +215,22 @@ def main_1d():
                          verbose=1)
     t0 = time.time()
     # Train GP on training data to learn length scales
-    gp.fit(X, y)
+    for _ in xrange(1):
+        track_time = time.time()
+        gp.fit(X, y)
+        print "Fit_Speed: {0:.5f}".format(time.time() - track_time)
     print "FitDuration: {0:.5f}".format(time.time() - t0)
     print "LengthScale: {0:4.3f}".format(gp.sess.run(gp.kernel.length_scales)[0])
     print "Noise: {0:4.3f}".format(gp.sess.run(gp.noise))
     print "Cost: {0:4.3f}".format(gp.sess.run(gp.cost, feed_dict={gp.X: X, gp.y: y})[0,0])
+
     # Make prediction
     X_new = np.float32(np.linspace(lim[0], lim[1], n_predict).reshape(-1,1))
     X_new = np.sort(X_new, axis=0)
-    y_pred, var = gp.predict(X_new)
-    t1 = time.time()
-    y_pred = gp.sess.run(y_pred)
-    t2 = time.time()
-    var = gp.sess.run(var)
-    t3 = time.time()
-    print "PredictionDuration: {0:.5f}".format(t2-t1)
-    print "CovDuration: {0:.5f}".format(t3-t2)
+    for _ in xrange(100):
+        track_time = time.time()
+        y_pred, var = gp.np_predict(X_new)
+        print "Predict_Run_Speed: {0:.5f}".format(time.time() - track_time)
     ci = np.sqrt(var)*2
     plt.plot(X_new, y_pred)
     plt.plot(X_new, y_pred+ci, 'g--')
@@ -263,9 +283,8 @@ def main_2d():
     X_new = np.float32(np.hstack((mx.ravel().reshape(-1, 1),
                                   my.ravel().reshape(-1, 1))))
     # Make prediction
-    y_pred, var = gp.predict(X_new)
-    y_pred = (gp.sess.run(y_pred)).reshape(mx.shape)
-    var = gp.sess.run(var)
+    y_pred, var = gp.np_predict(X_new)
+    y_pred = y_pred.reshape(mx.shape)
     ci = (np.sqrt(var)*2).reshape(mx.shape)
     # Plot
     fig = plt.figure()
