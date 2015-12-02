@@ -177,7 +177,7 @@ class AutomaticStatistician(object):
                                     optimizer=tf.train.GradientDescentOptimizer(0.1),
                                     verbose=0)
         self.n_queries = 20
-        self.depth = 1
+        self.depth = 3
         self.n_sim = 1
         self.models = [ModelHistory.new(model, dataset, self.bo, self.gp) for model in models.list_models()]
 
