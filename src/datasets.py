@@ -81,6 +81,7 @@ class Dataset(object):
             pass
 
 
+diabetes = iris = large_binary = None
 def _load_datasets():
     global diabetes
     global iris
