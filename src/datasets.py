@@ -62,6 +62,9 @@ class Dataset(object):
         if scale_targets:
             preprocessing.scale(self.target, with_mean=True, with_std=True, copy=False)
 
+    def __len__(self):
+        return self.data.shape[0]
+
     @staticmethod
     def from_file(path):
         """
@@ -78,10 +81,22 @@ class Dataset(object):
             pass
 
 
-# Preload some datasets here
-_diabetes = skdatasets.load_diabetes()
-diabetes = Dataset(_diabetes.data, _diabetes.target, scale_targets=True)
+def _load_datasets():
+    global diabetes
+    global iris
+    global large_binary
+    # Preload some datasets here
+    _diabetes = skdatasets.load_diabetes()
+    diabetes = Dataset(_diabetes.data, _diabetes.target, scale_targets=True)
 
-_iris = skdatasets.load_iris()
-iris = Dataset(_iris.data, _iris.target)
+    _iris = skdatasets.load_iris()
+    iris = Dataset(_iris.data, _iris.target)
+
+    large_binary = Dataset(*skdatasets.make_classification(n_samples=10000,
+                                                           n_features=10,
+                                                           n_redundant=2,
+                                                           n_informative=3))
+
+
+_load_datasets()
 

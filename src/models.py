@@ -296,13 +296,13 @@ def list_dummy_models():
 
 if __name__ == "__main__":
     import random
-    from datasets import diabetes, iris
+    import datasets
 
     random.seed(1337)
     for model in list_regression_models():
         hyperparameters = tuple(random.random() for _ in range(model.NUM_HYPERPARAMETERS))
-        model.fit(diabetes, hyperparameters)
+        model.fit(datasets.diabetes, hyperparameters)
 
     for model in list_classification_models():
         hyperparameters = tuple(random.random() for _ in range(model.NUM_HYPERPARAMETERS))
-        model.fit(iris, hyperparameters)
+        model.fit(datasets.large_binary, hyperparameters)
