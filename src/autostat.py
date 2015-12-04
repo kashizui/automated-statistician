@@ -78,10 +78,11 @@ class ModelHistory(object):
             print self.performance
             raise
 
+
         # Select slice at max of acquisition function
         hp, perf_mean, acq = self.bo.select()
         perf_mean, perf_var = self.gp.np_predict(hp)
-
+        
         # Compute mean and variance of runtimes
         runtime_mean = np.mean(self.runtime)
         runtime_std = np.std(self.runtime)
@@ -198,16 +199,17 @@ class AutomaticStatistician(object):
 
         # create bayesian optimizer and gassian process
         self.kernel = SquaredExponential(n_dim=1,  # assuming 1 hyperparameter
-                                         init_scale_range=(.1, .5),
+                                         init_scale_range=(.01, .1),
                                          init_amp=1.)
 
         self.gp = GaussianProcess(n_epochs=100,
                                   batch_size=batch_size,
                                   n_dim=1,  # assuming 1 hyperparameter
                                   kernel=self.kernel,
-                                  noise=0.05,
+                                  noise=0.01,
                                   train_noise=False,
-                                  optimizer=tf.train.GradientDescentOptimizer(0.001),
+                                  optimizer=tf.train.AdagradOptimizer(0.01),
+                                  # optimizer=tf.train.GradientDescentOptimizer(0.01),
                                   verbose=0)
 
         self.bo = BayesianOptimizer(self.gp,
@@ -313,7 +315,7 @@ class AutomaticStatistician(object):
 
 
 if __name__ == "__main__":
-    np.random.seed(10)
-    tf.set_random_seed(10)
+    # np.random.seed(10)
+    # tf.set_random_seed(10)
     autostat = AutomaticStatistician()
     autostat.run(datasets.large_binary, time_limit=10.)

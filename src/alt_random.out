@@ -1,0 +1,67 @@
+src: python alt_random.py 
+I tensorflow/core/common_runtime/local_device.cc:25] Local device intra op parallelism threads: 1
+I tensorflow/core/common_runtime/local_session.cc:45] Local session inter op parallelism threads: 1
+...Result: perf=0.42000, time=3.82365
+...Result: perf=0.62258, time=0.01063
+...Result: perf=0.59636, time=0.00858
+Counter: 0 Training: l1(x=-0.815). Time left: 60.000
+...Result: perf=0.58000, time=0.00950
+Counter: 1 Training: knn(x=0.339). Time left: 59.991
+...Result: perf=0.48364, time=4.04708
+Counter: 2 Training: knn(x=0.078). Time left: 55.943
+...Result: perf=0.45606, time=7.27228
+Counter: 3 Training: l2(x=-0.373). Time left: 48.671
+...Result: perf=0.62167, time=0.02877
+Counter: 4 Training: l1(x=0.756). Time left: 48.642
+...Result: perf=0.62258, time=0.01889
+Counter: 5 Training: l2(x=0.341). Time left: 48.623
+...Result: perf=0.62258, time=0.01724
+Counter: 6 Training: knn(x=-0.139). Time left: 48.606
+...Result: perf=0.42167, time=5.58119
+Counter: 7 Training: l2(x=-0.604). Time left: 43.025
+...Result: perf=0.61848, time=0.01361
+Counter: 8 Training: knn(x=0.937). Time left: 43.011
+...Result: perf=0.49182, time=5.44199
+Counter: 9 Training: knn(x=0.385). Time left: 37.569
+...Result: perf=0.48697, time=5.21776
+Counter: 10 Training: knn(x=0.730). Time left: 32.352
+...Result: perf=0.49197, time=8.58505
+Counter: 11 Training: knn(x=-0.830). Time left: 23.767
+...Result: perf=0.77712, time=2.34828
+Counter: 12 Training: knn(x=-0.454). Time left: 21.418
+...Result: perf=0.44879, time=3.29069
+Counter: 13 Training: l2(x=0.756). Time left: 18.128
+...Result: perf=0.62258, time=0.01105
+Counter: 14 Training: l2(x=0.916). Time left: 18.117
+...Result: perf=0.62258, time=0.01052
+Counter: 15 Training: l1(x=-0.421). Time left: 18.106
+...Result: perf=0.61879, time=0.00934
+Counter: 16 Training: l1(x=0.567). Time left: 18.097
+...Result: perf=0.62258, time=0.01177
+Counter: 17 Training: knn(x=-0.932). Time left: 18.085
+...Result: perf=0.84788, time=1.92805
+Counter: 18 Training: l2(x=0.978). Time left: 16.157
+...Result: perf=0.62258, time=0.01108
+Counter: 19 Training: knn(x=-0.439). Time left: 16.146
+...Result: perf=0.44379, time=3.32191
+Counter: 20 Training: l2(x=-0.853). Time left: 12.824
+...Result: perf=0.60939, time=0.01040
+Counter: 21 Training: knn(x=-0.808). Time left: 12.814
+...Result: perf=0.74227, time=2.30778
+Counter: 22 Training: l2(x=-0.424). Time left: 10.506
+...Result: perf=0.62152, time=0.01671
+Counter: 23 Training: knn(x=-0.833). Time left: 10.489
+...Result: perf=0.78212, time=2.62191
+Counter: 24 Training: l2(x=-0.577). Time left: 7.867
+...Result: perf=0.61894, time=0.01106
+Counter: 25 Training: l2(x=-0.017). Time left: 7.856
+...Result: perf=0.62227, time=0.01073
+Counter: 26 Training: knn(x=0.228). Time left: 7.845
+...Result: perf=0.47515, time=5.03460
+Counter: 27 Training: l1(x=0.179). Time left: 2.811
+...Result: perf=0.62242, time=0.01080
+Counter: 28 Training: l1(x=-0.795). Time left: 2.800
+...Result: perf=0.58500, time=0.00988
+Counter: 29 Training: knn(x=0.389). Time left: 2.790
+...Result: perf=0.48682, time=4.18173
+src: 

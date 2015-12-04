@@ -1,0 +1,486 @@
+src: python alt_autostat.py 
+I tensorflow/core/common_runtime/local_device.cc:25] Local device intra op parallelism threads: 1
+I tensorflow/core/common_runtime/local_session.cc:45] Local session inter op parallelism threads: 1
+...Result: perf=0.42000, time=3.80019
+...Result: perf=0.62258, time=0.01112
+...Result: perf=0.59636, time=0.00879
+knn : [0.189, 0.000, -0.528]. Time: 3.766, R: -0.528
+l2  : [0.201, 0.000, 0.865]. Time: -0.062, R: 0.865
+l1  : [0.748, 0.000, 1.745]. Time: -0.015, R: 1.745
+Counter: 0 Training: l1(x=0.748). Time left: 60.000
+...Result: perf=0.62258, time=0.01037
+knn : [0.323, 0.000, -1.508]. Time: 3.790, R: -1.508
+l2  : [0.681, 0.000, 0.858]. Time: 0.013, R: 0.858
+l1  : [1.000, 0.000, 0.346]. Time: -0.008, R: 0.346
+Counter: 1 Training: l2(x=0.681). Time left: 59.990
+...Result: perf=0.62258, time=0.01101
+knn : [0.159, 0.000, 0.857]. Time: 3.806, R: 0.857
+l2  : [1.000, 0.000, 0.582]. Time: -0.002, R: 0.582
+l1  : [1.000, 0.000, 0.817]. Time: 0.060, R: 0.817
+Counter: 2 Training: knn(x=0.159). Time left: 59.979
+...Result: perf=0.46727, time=8.39370
+knn : [0.689, 0.000, -0.089]. Time: 7.463, R: -0.089
+l2  : [0.956, 0.000, 0.278]. Time: 0.033, R: 0.278
+l1  : [-1.000, 0.000, 1.492]. Time: 0.014, R: 1.492
+Counter: 3 Training: l1(x=-1.000). Time left: 51.585
+...Result: perf=0.53288, time=0.02138
+knn : [-0.512, 0.000, 0.639]. Time: 6.434, R: 0.639
+l2  : [0.918, 0.000, -0.303]. Time: 0.014, R: -0.303
+l1  : [0.569, 0.000, -0.229]. Time: 0.145, R: -0.229
+Counter: 4 Training: knn(x=-0.512). Time left: 51.564
+...Result: perf=0.47076, time=4.43035
+knn : [0.018, 0.000, 1.443]. Time: 4.772, R: 1.443
+l2  : [0.201, 0.000, -1.637]. Time: 0.139, R: -1.637
+l1  : [0.845, 0.083, 1.983]. Time: 0.063, R: 1.983
+Counter: 5 Training: l1(x=0.845). Time left: 47.133
+...Result: perf=0.62258, time=0.01190
+knn : [1.000, 0.000, 0.528]. Time: 5.282, R: 0.528
+l2  : [0.821, 0.000, 0.284]. Time: 0.091, R: 0.284
+l1  : [0.579, 0.087, 0.440]. Time: 0.046, R: 0.440
+Counter: 6 Training: knn(x=1.000). Time left: 47.121
+...Result: perf=0.49182, time=9.43002
+knn : [0.015, 0.101, 1.467]. Time: 6.867, R: 1.467
+l2  : [-1.000, 0.000, -2.515]. Time: 0.037, R: -2.515
+l1  : [0.572, 0.069, -1.178]. Time: 0.148, R: -1.178
+Counter: 7 Training: knn(x=0.015). Time left: 37.691
+...Result: perf=0.44606, time=3.96281
+knn : [0.502, 0.000, 1.444]. Time: 6.522, R: 1.444
+l2  : [1.000, 0.000, 0.161]. Time: 0.038, R: 0.161
+l1  : [1.000, 0.012, 1.039]. Time: 0.033, R: 1.039
+Counter: 8 Training: knn(x=0.502). Time left: 33.728
+...Result: perf=0.49076, time=3.99182
+knn : [-1.000, 0.000, 1.891]. Time: 6.940, R: 1.891
+l2  : [0.975, 0.000, -0.563]. Time: 0.061, R: -0.563
+l1  : [1.000, 0.087, -0.190]. Time: 0.057, R: -0.190
+Counter: 9 Training: knn(x=-1.000). Time left: 29.737
+...Result: perf=0.85803, time=1.99998
+knn : [-0.346, 0.000, -1.190]. Time: 6.589, R: -1.190
+l2  : [1.000, 0.001, 0.192]. Time: 0.016, R: 0.192
+l1  : [1.000, 0.005, -0.018]. Time: -0.025, R: -0.018
+Counter: 10 Training: l2(x=1.000). Time left: 27.737
+...Result: perf=0.62258, time=0.01300
+knn : [0.870, 0.182, 1.014]. Time: 6.699, R: 1.014
+l2  : [0.094, 0.000, 0.387]. Time: 0.038, R: 0.387
+l1  : [1.000, 0.000, -0.622]. Time: 0.046, R: -0.622
+Counter: 11 Training: knn(x=0.870). Time left: 27.724
+...Result: perf=0.49182, time=4.86853
+knn : [0.258, 0.000, 2.228]. Time: 4.651, R: 2.228
+l2  : [0.266, 0.000, -0.858]. Time: -0.034, R: -0.858
+l1  : [0.431, 0.000, -1.611]. Time: 0.043, R: -1.611
+Counter: 12 Training: knn(x=0.258). Time left: 22.855
+...Result: perf=0.47788, time=4.08615
+knn : [-1.000, 0.856, 0.857]. Time: 5.698, R: 0.857
+l2  : [0.223, 0.000, -0.692]. Time: -0.062, R: -0.692
+l1  : [0.295, 0.000, -0.323]. Time: -0.069, R: -0.323
+Counter: 13 Training: knn(x=-1.000). Time left: 18.769
+...Result: perf=0.85803, time=1.67797
+knn : [0.665, 0.514, 0.498]. Time: 5.034, R: 0.498
+l2  : [0.152, 0.000, -3.222]. Time: -0.000, R: -3.222
+l1  : [1.000, 0.060, 1.229]. Time: -0.020, R: 1.229
+Counter: 14 Training: l1(x=1.000). Time left: 17.091
+...Result: perf=0.62258, time=0.01315
+knn : [0.669, 0.514, 0.575]. Time: 3.837, R: 0.575
+l2  : [-1.000, 0.000, -0.850]. Time: -0.038, R: -0.850
+l1  : [-0.337, 0.000, 0.437]. Time: 0.049, R: 0.437
+Counter: 15 Training: knn(x=0.669). Time left: 17.078
+...Result: perf=0.49182, time=3.87233
+knn : [0.677, 0.508, 0.520]. Time: 4.166, R: 0.520
+l2  : [0.102, 0.000, 1.840]. Time: 0.012, R: 1.840
+l1  : [0.046, 0.000, 0.652]. Time: -0.135, R: 0.652
+Counter: 16 Training: l2(x=0.102). Time left: 13.206
+...Result: perf=0.62258, time=0.01033
+knn : [0.680, 0.508, 0.547]. Time: 1.312, R: 0.547
+l2  : [-0.158, 0.000, 1.943]. Time: -0.022, R: 1.943
+l1  : [0.515, 0.000, -0.872]. Time: 0.041, R: -0.872
+Counter: 17 Training: l2(x=-0.158). Time left: 13.195
+...Result: perf=0.62212, time=0.01046
+knn : [0.678, 0.508, 0.477]. Time: 6.159, R: 0.477
+l2  : [-1.000, 0.000, -1.171]. Time: 0.108, R: -1.171
+l1  : [0.252, 0.000, -0.626]. Time: -0.001, R: -0.626
+Counter: 18 Training: knn(x=0.678). Time left: 13.185
+...Result: perf=0.49182, time=3.93007
+knn : [1.000, 0.479, 0.489]. Time: 3.499, R: 0.489
+l2  : [-1.000, 0.000, 1.117]. Time: 0.001, R: 1.117
+l1  : [0.365, 0.000, -0.365]. Time: -0.005, R: -0.365
+Counter: 19 Training: l2(x=-1.000). Time left: 9.255
+...Result: perf=0.59076, time=0.01025
+knn : [1.000, 0.479, 0.474]. Time: 7.302, R: 0.474
+l2  : [-0.581, 0.000, -2.241]. Time: 0.076, R: -2.241
+l1  : [0.908, 0.000, 1.680]. Time: -0.055, R: 1.680
+Counter: 20 Training: l1(x=0.908). Time left: 9.244
+...Result: perf=0.62258, time=0.01009
+knn : [1.000, 0.479, 0.444]. Time: 7.416, R: 0.444
+l2  : [0.186, 0.000, 1.522]. Time: 0.030, R: 1.522
+l1  : [0.557, 0.084, 0.693]. Time: -0.104, R: 0.693
+Counter: 21 Training: l2(x=0.186). Time left: 9.234
+...Result: perf=0.62258, time=0.01059
+knn : [0.681, 0.504, 0.482]. Time: 5.501, R: 0.482
+l2  : [1.000, 0.621, 0.615]. Time: 0.019, R: 0.615
+l1  : [0.424, 0.000, 0.101]. Time: 0.068, R: 0.101
+Counter: 22 Training: l2(x=1.000). Time left: 9.224
+...Result: perf=0.62258, time=0.01199
+knn : [1.000, 0.479, 0.424]. Time: 4.682, R: 0.424
+l2  : [1.000, 0.622, 0.633]. Time: -0.045, R: 0.633
+l1  : [0.557, 0.000, -1.414]. Time: -0.020, R: -1.414
+Counter: 23 Training: l2(x=1.000). Time left: 9.212
+...Result: perf=0.62258, time=0.01030
+knn : [1.000, 0.479, 0.479]. Time: 2.208, R: 0.479
+l2  : [-0.756, 0.000, 0.281]. Time: 0.015, R: 0.281
+l1  : [0.481, 0.000, -0.579]. Time: -0.002, R: -0.579
+Counter: 24 Training: knn(x=1.000). Time left: 9.201
+...Result: perf=0.49182, time=3.81712
+knn : [0.680, 0.505, 0.529]. Time: 5.074, R: 0.529
+l2  : [-1.000, 0.589, 0.646]. Time: 0.040, R: 0.646
+l1  : [0.169, 0.000, 0.000]. Time: -0.089, R: 0.000
+Counter: 25 Training: l2(x=-1.000). Time left: 5.384
+...Result: perf=0.59076, time=0.01054
+knn : [0.677, 0.505, 0.457]. Time: 2.719, R: 0.457
+l2  : [-0.465, 0.617, 0.529]. Time: 0.038, R: 0.529
+l1  : [0.134, 0.000, -0.160]. Time: 0.102, R: -0.160
+Counter: 26 Training: l2(x=-0.465). Time left: 5.374
+...Result: perf=0.62091, time=0.01084
+knn : [0.678, 0.505, 0.493]. Time: 4.870, R: 0.493
+l2  : [0.512, 0.624, 0.624]. Time: -0.070, R: 0.624
+l1  : [0.519, 0.000, -0.924]. Time: 0.022, R: -0.924
+Counter: 27 Training: l2(x=0.512). Time left: 5.363
+...Result: perf=0.62258, time=0.01073
+knn : [0.676, 0.505, 0.516]. Time: 4.129, R: 0.516
+l2  : [0.523, 0.624, 0.608]. Time: 0.013, R: 0.608
+l1  : [0.490, 0.000, 1.691]. Time: -0.039, R: 1.691
+Counter: 28 Training: l1(x=0.490). Time left: 5.352
+...Result: perf=0.62258, time=0.00988
+knn : [0.675, 0.505, 0.521]. Time: 4.595, R: 0.521
+l2  : [1.000, 0.621, 0.622]. Time: 0.051, R: 0.622
+l1  : [0.651, 0.000, 1.729]. Time: 0.054, R: 1.729
+Counter: 29 Training: l1(x=0.651). Time left: 5.342
+...Result: perf=0.62258, time=0.00969
+knn : [0.676, 0.505, 0.528]. Time: 3.179, R: 0.528
+l2  : [1.000, 0.621, 0.653]. Time: -0.063, R: 0.653
+l1  : [0.142, 0.000, 0.453]. Time: 0.024, R: 0.453
+Counter: 30 Training: l2(x=1.000). Time left: 5.333
+...Result: perf=0.62258, time=0.01080
+knn : [0.681, 0.505, 0.489]. Time: 3.615, R: 0.489
+l2  : [-0.283, 0.621, 0.605]. Time: -0.070, R: 0.605
+l1  : [0.227, 0.000, 0.693]. Time: -0.081, R: 0.693
+Counter: 31 Training: l1(x=0.227). Time left: 5.322
+...Result: perf=0.62242, time=0.01123
+knn : [0.679, 0.505, 0.525]. Time: 3.129, R: 0.525
+l2  : [-0.202, 0.622, 0.610]. Time: -0.031, R: 0.610
+l1  : [-0.535, 0.000, -0.166]. Time: 0.058, R: -0.166
+Counter: 32 Training: l2(x=-0.202). Time left: 5.311
+...Result: perf=0.62197, time=0.01080
+knn : [0.681, 0.505, 0.558]. Time: 1.266, R: 0.558
+l2  : [0.551, 0.624, 0.615]. Time: 0.045, R: 0.615
+l1  : [0.355, 0.000, 0.038]. Time: -0.053, R: 0.038
+Counter: 33 Training: l2(x=0.551). Time left: 5.300
+...Result: perf=0.62258, time=0.01104
+knn : [0.676, 0.505, 0.532]. Time: 5.004, R: 0.532
+l2  : [0.506, 0.623, 0.661]. Time: 0.012, R: 0.661
+l1  : [1.000, 0.621, 0.611]. Time: 0.040, R: 0.611
+Counter: 34 Training: l2(x=0.506). Time left: 5.289
+...Result: perf=0.62258, time=0.01059
+knn : [0.676, 0.505, 0.475]. Time: 2.272, R: 0.475
+l2  : [1.000, 0.621, 0.602]. Time: -0.029, R: 0.602
+l1  : [-0.487, 0.017, -0.007]. Time: -0.164, R: -0.007
+Counter: 35 Training: l2(x=1.000). Time left: 5.278
+...Result: perf=0.62258, time=0.01057
+knn : [0.683, 0.505, 0.490]. Time: 5.705, R: -1.000
+l2  : [-0.237, 0.622, 0.667]. Time: 0.037, R: 0.667
+l1  : [0.132, 0.000, -0.467]. Time: 0.053, R: -0.467
+Counter: 36 Training: l2(x=-0.237). Time left: 5.268
+...Result: perf=0.62197, time=0.01130
+knn : [0.682, 0.505, 0.548]. Time: 3.695, R: 0.548
+l2  : [0.556, 0.623, 0.600]. Time: 0.048, R: 0.600
+l1  : [-0.288, 0.000, -1.866]. Time: 0.000, R: -1.866
+Counter: 37 Training: l2(x=0.556). Time left: 5.256
+...Result: perf=0.62258, time=0.01108
+knn : [0.682, 0.505, 0.506]. Time: 6.655, R: -1.000
+l2  : [1.000, 0.622, 0.635]. Time: 0.056, R: 0.635
+l1  : [-0.537, 0.000, 0.245]. Time: 0.074, R: 0.245
+Counter: 38 Training: l2(x=1.000). Time left: 5.245
+...Result: perf=0.62258, time=0.01073
+knn : [0.681, 0.505, 0.497]. Time: 3.564, R: 0.497
+l2  : [0.625, 0.624, 0.632]. Time: 0.022, R: 0.632
+l1  : [-0.167, 0.000, -1.451]. Time: 0.049, R: -1.451
+Counter: 39 Training: l2(x=0.625). Time left: 5.235
+...Result: perf=0.62258, time=0.01057
+knn : [0.678, 0.505, 0.515]. Time: 3.272, R: 0.515
+l2  : [0.601, 0.624, 0.615]. Time: 0.050, R: 0.615
+l1  : [-0.121, 0.000, 0.920]. Time: -0.088, R: 0.920
+Counter: 40 Training: l1(x=-0.121). Time left: 5.224
+...Result: perf=0.62197, time=0.00984
+knn : [0.674, 0.505, 0.467]. Time: 4.943, R: 0.467
+l2  : [-0.048, 0.623, 0.643]. Time: 0.013, R: 0.643
+l1  : [-0.166, 0.622, 0.582]. Time: 0.109, R: 0.582
+Counter: 41 Training: l2(x=-0.048). Time left: 5.214
+...Result: perf=0.62227, time=0.01107
+knn : [0.679, 0.505, 0.520]. Time: 7.073, R: -1.000
+l2  : [0.947, 0.622, 0.599]. Time: -0.063, R: 0.599
+l1  : [-0.185, 0.622, 0.628]. Time: -0.026, R: 0.628
+Counter: 42 Training: l1(x=-0.185). Time left: 5.203
+...Result: perf=0.62167, time=0.00955
+knn : [0.681, 0.505, 0.501]. Time: 4.415, R: 0.501
+l2  : [0.383, 0.624, 0.614]. Time: 0.053, R: 0.614
+l1  : [1.000, 0.619, 0.598]. Time: -0.027, R: 0.598
+Counter: 43 Training: l2(x=0.383). Time left: 5.194
+...Result: perf=0.62258, time=0.01051
+knn : [0.677, 0.505, 0.465]. Time: 6.992, R: -1.000
+l2  : [0.406, 0.624, 0.618]. Time: -0.031, R: 0.618
+l1  : [1.000, 0.619, 0.597]. Time: 0.035, R: 0.597
+Counter: 44 Training: l2(x=0.406). Time left: 5.183
+...Result: perf=0.62258, time=0.01078
+knn : [0.681, 0.505, 0.508]. Time: 4.690, R: 0.508
+l2  : [1.000, 0.621, 0.632]. Time: -0.069, R: 0.632
+l1  : [1.000, 0.619, 0.662]. Time: 0.004, R: 0.662
+Counter: 45 Training: l1(x=1.000). Time left: 5.172
+...Result: perf=0.62258, time=0.01208
+knn : [0.680, 0.505, 0.455]. Time: 5.558, R: -1.000
+l2  : [0.507, 0.624, 0.624]. Time: -0.006, R: 0.624
+l1  : [0.064, 0.626, 0.577]. Time: 0.078, R: 0.577
+Counter: 46 Training: l2(x=0.507). Time left: 5.160
+...Result: perf=0.62258, time=0.01049
+knn : [0.676, 0.505, 0.524]. Time: 5.937, R: -1.000
+l2  : [0.832, 0.623, 0.616]. Time: -0.020, R: 0.616
+l1  : [0.368, 0.625, 0.661]. Time: 0.145, R: 0.661
+Counter: 47 Training: l1(x=0.368). Time left: 5.150
+...Result: perf=0.62258, time=0.01089
+knn : [0.680, 0.505, 0.492]. Time: 4.617, R: 0.492
+l2  : [1.000, 0.621, 0.614]. Time: 0.017, R: 0.614
+l1  : [-0.168, 0.622, 0.645]. Time: 0.014, R: 0.645
+Counter: 48 Training: l1(x=-0.168). Time left: 5.139
+...Result: perf=0.62167, time=0.01047
+knn : [0.680, 0.505, 0.478]. Time: 6.382, R: -1.000
+l2  : [-0.196, 0.621, 0.622]. Time: 0.056, R: 0.622
+l1  : [1.000, 0.621, 0.575]. Time: -0.085, R: 0.575
+Counter: 49 Training: l2(x=-0.196). Time left: 5.128
+...Result: perf=0.62212, time=0.01046
+knn : [0.679, 0.505, 0.490]. Time: 2.604, R: 0.490
+l2  : [0.569, 0.623, 0.644]. Time: 0.018, R: 0.644
+l1  : [1.000, 0.621, 0.596]. Time: 0.081, R: 0.596
+Counter: 50 Training: l2(x=0.569). Time left: 5.118
+...Result: perf=0.62258, time=0.01080
+knn : [0.676, 0.505, 0.484]. Time: 3.625, R: 0.484
+l2  : [0.437, 0.624, 0.567]. Time: 0.011, R: 0.567
+l1  : [1.000, 0.621, 0.589]. Time: -0.011, R: 0.589
+Counter: 51 Training: l1(x=1.000). Time left: 5.107
+...Result: perf=0.62258, time=0.00968
+knn : [0.678, 0.505, 0.510]. Time: 6.416, R: -1.000
+l2  : [1.000, 0.621, 0.593]. Time: 0.036, R: 0.593
+l1  : [-0.159, 0.622, 0.655]. Time: 0.049, R: 0.655
+Counter: 52 Training: l1(x=-0.159). Time left: 5.097
+...Result: perf=0.62182, time=0.01180
+knn : [0.676, 0.505, 0.479]. Time: 4.237, R: 0.479
+l2  : [1.000, 0.621, 0.606]. Time: 0.020, R: 0.606
+l1  : [0.477, 0.624, 0.643]. Time: -0.001, R: 0.643
+Counter: 53 Training: l1(x=0.477). Time left: 5.086
+...Result: perf=0.62258, time=0.01029
+knn : [0.682, 0.505, 0.483]. Time: 3.954, R: 0.483
+l2  : [1.000, 0.621, 0.604]. Time: 0.067, R: 0.604
+l1  : [0.341, 0.624, 0.617]. Time: -0.032, R: 0.617
+Counter: 54 Training: l1(x=0.341). Time left: 5.075
+...Result: perf=0.62258, time=0.01044
+knn : [0.680, 0.505, 0.465]. Time: 3.825, R: 0.465
+l2  : [1.000, 0.621, 0.622]. Time: 0.038, R: 0.622
+l1  : [1.000, 0.621, 0.623]. Time: 0.030, R: 0.623
+Counter: 55 Training: l1(x=1.000). Time left: 5.065
+...Result: perf=0.62258, time=0.00974
+knn : [0.677, 0.505, 0.498]. Time: 5.936, R: -1.000
+l2  : [1.000, 0.621, 0.603]. Time: 0.037, R: 0.603
+l1  : [-0.169, 0.622, 0.598]. Time: -0.014, R: 0.598
+Counter: 56 Training: l2(x=1.000). Time left: 5.055
+...Result: perf=0.62258, time=0.01128
+knn : [0.677, 0.505, 0.524]. Time: 5.696, R: -1.000
+l2  : [-0.247, 0.621, 0.602]. Time: -0.014, R: 0.602
+l1  : [-0.162, 0.622, 0.583]. Time: 0.113, R: 0.583
+Counter: 57 Training: l2(x=-0.247). Time left: 5.044
+...Result: perf=0.62197, time=0.01061
+knn : [0.680, 0.505, 0.491]. Time: 5.442, R: -1.000
+l2  : [0.321, 0.623, 0.590]. Time: 0.016, R: 0.590
+l1  : [0.355, 0.623, 0.610]. Time: -0.026, R: 0.610
+Counter: 58 Training: l1(x=0.355). Time left: 5.033
+...Result: perf=0.62258, time=0.01068
+knn : [0.679, 0.505, 0.509]. Time: 3.434, R: 0.509
+l2  : [1.000, 0.621, 0.620]. Time: -0.057, R: 0.620
+l1  : [1.000, 0.620, 0.612]. Time: 0.074, R: 0.612
+Counter: 59 Training: l2(x=1.000). Time left: 5.022
+...Result: perf=0.62258, time=0.01066
+knn : [0.679, 0.505, 0.451]. Time: 6.560, R: -1.000
+l2  : [0.046, 0.623, 0.626]. Time: -0.073, R: 0.626
+l1  : [0.419, 0.626, 0.630]. Time: 0.001, R: 0.630
+Counter: 60 Training: l1(x=0.419). Time left: 5.012
+...Result: perf=0.62258, time=0.00957
+knn : [0.685, 0.505, 0.514]. Time: 4.666, R: 0.514
+l2  : [0.177, 0.624, 0.632]. Time: -0.030, R: 0.632
+l1  : [-0.011, 0.623, 0.686]. Time: 0.007, R: 0.686
+Counter: 61 Training: l1(x=-0.011). Time left: 5.002
+...Result: perf=0.62212, time=0.00970
+knn : [0.677, 0.505, 0.450]. Time: 6.472, R: -1.000
+l2  : [0.296, 0.624, 0.599]. Time: 0.003, R: 0.599
+l1  : [-0.024, 0.623, 0.607]. Time: 0.022, R: 0.607
+Counter: 62 Training: l1(x=-0.024). Time left: 4.993
+...Result: perf=0.62212, time=0.00949
+knn : [0.679, 0.505, 0.490]. Time: 4.287, R: 0.490
+l2  : [1.000, 0.621, 0.615]. Time: -0.063, R: 0.615
+l1  : [0.119, 0.625, 0.641]. Time: -0.115, R: 0.641
+Counter: 63 Training: l1(x=0.119). Time left: 4.983
+...Result: perf=0.62227, time=0.01047
+knn : [0.681, 0.505, 0.532]. Time: 4.191, R: 0.532
+l2  : [0.148, 0.624, 0.605]. Time: 0.023, R: 0.605
+l1  : [0.500, 0.625, 0.609]. Time: -0.012, R: 0.609
+Counter: 64 Training: l1(x=0.500). Time left: 4.973
+...Result: perf=0.62258, time=0.01060
+knn : [0.677, 0.505, 0.505]. Time: 3.416, R: 0.505
+l2  : [0.476, 0.624, 0.649]. Time: 0.035, R: 0.649
+l1  : [0.415, 0.625, 0.623]. Time: 0.001, R: 0.623
+Counter: 65 Training: l2(x=0.476). Time left: 4.962
+...Result: perf=0.62258, time=0.01037
+knn : [0.679, 0.505, 0.513]. Time: 2.638, R: 0.513
+l2  : [0.613, 0.624, 0.630]. Time: 0.046, R: 0.630
+l1  : [1.000, 0.620, 0.624]. Time: -0.014, R: 0.624
+Counter: 66 Training: l2(x=0.613). Time left: 4.952
+...Result: perf=0.62258, time=0.01070
+knn : [0.675, 0.505, 0.497]. Time: 5.132, R: -1.000
+l2  : [0.228, 0.624, 0.646]. Time: 0.046, R: 0.646
+l1  : [1.000, 0.620, 0.605]. Time: 0.017, R: 0.605
+Counter: 67 Training: l2(x=0.228). Time left: 4.941
+...Result: perf=0.62258, time=0.01076
+knn : [0.678, 0.505, 0.514]. Time: 5.757, R: -1.000
+l2  : [-0.041, 0.622, 0.615]. Time: 0.051, R: 0.615
+l1  : [1.000, 0.620, 0.647]. Time: 0.057, R: 0.647
+Counter: 68 Training: l1(x=1.000). Time left: 4.930
+...Result: perf=0.62258, time=0.00971
+knn : [0.683, 0.505, 0.509]. Time: 3.884, R: 0.509
+l2  : [0.082, 0.623, 0.646]. Time: 0.046, R: 0.646
+l1  : [0.159, 0.625, 0.624]. Time: 0.128, R: 0.624
+Counter: 69 Training: l2(x=0.082). Time left: 4.920
+...Result: perf=0.62258, time=0.01082
+knn : [0.678, 0.505, 0.514]. Time: 7.366, R: -1.000
+l2  : [0.069, 0.623, 0.641]. Time: 0.101, R: 0.641
+l1  : [1.000, 0.621, 0.615]. Time: 0.060, R: 0.615
+Counter: 70 Training: l2(x=0.069). Time left: 4.910
+...Result: perf=0.62242, time=0.01059
+knn : [0.677, 0.505, 0.512]. Time: 3.705, R: 0.512
+l2  : [1.000, 0.621, 0.619]. Time: -0.079, R: 0.619
+l1  : [1.000, 0.621, 0.651]. Time: -0.013, R: 0.651
+Counter: 71 Training: l1(x=1.000). Time left: 4.899
+...Result: perf=0.62258, time=0.01034
+knn : [0.682, 0.505, 0.522]. Time: 1.677, R: 0.522
+l2  : [0.099, 0.623, 0.625]. Time: -0.044, R: 0.625
+l1  : [0.536, 0.624, 0.608]. Time: 0.070, R: 0.608
+Counter: 72 Training: l2(x=0.099). Time left: 4.889
+...Result: perf=0.62258, time=0.01096
+knn : [0.677, 0.505, 0.506]. Time: 6.010, R: -1.000
+l2  : [0.488, 0.624, 0.585]. Time: 0.026, R: 0.585
+l1  : [1.000, 0.621, 0.631]. Time: 0.005, R: 0.631
+Counter: 73 Training: l1(x=1.000). Time left: 4.878
+...Result: perf=0.62242, time=0.00923
+knn : [0.677, 0.505, 0.531]. Time: 5.964, R: -1.000
+l2  : [0.627, 0.624, 0.653]. Time: -0.019, R: 0.653
+l1  : [0.242, 0.625, 0.614]. Time: -0.048, R: 0.614
+Counter: 74 Training: l2(x=0.627). Time left: 4.869
+...Result: perf=0.62258, time=0.01058
+knn : [0.681, 0.505, 0.468]. Time: 4.704, R: 0.468
+l2  : [0.540, 0.624, 0.652]. Time: -0.016, R: 0.652
+l1  : [0.659, 0.623, 0.609]. Time: 0.073, R: 0.609
+Counter: 75 Training: l2(x=0.540). Time left: 4.858
+...Result: perf=0.62258, time=0.01110
+knn : [0.679, 0.505, 0.580]. Time: 2.297, R: 0.580
+l2  : [0.926, 0.622, 0.649]. Time: 0.046, R: 0.649
+l1  : [0.120, 0.624, 0.654]. Time: -0.000, R: 0.654
+Counter: 76 Training: l1(x=0.120). Time left: 4.847
+...Result: perf=0.62227, time=0.01197
+knn : [0.682, 0.505, 0.515]. Time: 6.579, R: -1.000
+l2  : [0.747, 0.623, 0.622]. Time: 0.037, R: 0.622
+l1  : [0.544, 0.624, 0.629]. Time: -0.018, R: 0.629
+Counter: 77 Training: l1(x=0.544). Time left: 4.835
+...Result: perf=0.62258, time=0.00991
+knn : [0.678, 0.505, 0.496]. Time: 4.951, R: -1.000
+l2  : [0.307, 0.624, 0.631]. Time: -0.056, R: 0.631
+l1  : [1.000, 0.620, 0.608]. Time: 0.006, R: 0.608
+Counter: 78 Training: l2(x=0.307). Time left: 4.825
+...Result: perf=0.62258, time=0.01067
+knn : [0.679, 0.505, 0.481]. Time: 6.833, R: -1.000
+l2  : [0.104, 0.623, 0.647]. Time: -0.015, R: 0.647
+l1  : [0.281, 0.626, 0.625]. Time: 0.008, R: 0.625
+Counter: 79 Training: l2(x=0.104). Time left: 4.814
+...Result: perf=0.62258, time=0.01037
+knn : [0.679, 0.505, 0.560]. Time: 5.445, R: -1.000
+l2  : [0.241, 0.624, 0.620]. Time: 0.061, R: 0.620
+l1  : [0.068, 0.623, 0.610]. Time: 0.058, R: 0.610
+Counter: 80 Training: l2(x=0.241). Time left: 4.804
+...Result: perf=0.62258, time=0.01097
+knn : [0.684, 0.505, 0.495]. Time: 5.278, R: -1.000
+l2  : [1.000, 0.621, 0.613]. Time: 0.043, R: 0.613
+l1  : [0.412, 0.626, 0.630]. Time: -0.102, R: 0.630
+Counter: 81 Training: l1(x=0.412). Time left: 4.793
+...Result: perf=0.62258, time=0.01001
+knn : [0.679, 0.505, 0.521]. Time: 5.293, R: -1.000
+l2  : [0.556, 0.624, 0.644]. Time: -0.029, R: 0.644
+l1  : [0.363, 0.625, 0.616]. Time: 0.012, R: 0.616
+Counter: 82 Training: l2(x=0.556). Time left: 4.783
+...Result: perf=0.62258, time=0.01093
+knn : [0.679, 0.505, 0.520]. Time: 4.119, R: 0.520
+l2  : [0.155, 0.623, 0.615]. Time: 0.108, R: 0.615
+l1  : [0.694, 0.624, 0.604]. Time: 0.020, R: 0.604
+Counter: 83 Training: l2(x=0.155). Time left: 4.772
+...Result: perf=0.62258, time=0.01085
+knn : [0.679, 0.505, 0.455]. Time: 4.241, R: 0.455
+l2  : [0.361, 0.624, 0.643]. Time: 0.035, R: 0.643
+l1  : [0.483, 0.626, 0.612]. Time: 0.006, R: 0.612
+Counter: 84 Training: l2(x=0.361). Time left: 4.761
+...Result: perf=0.62258, time=0.01111
+knn : [0.681, 0.505, 0.487]. Time: 6.359, R: -1.000
+l2  : [0.416, 0.624, 0.603]. Time: 0.013, R: 0.603
+l1  : [0.832, 0.622, 0.597]. Time: -0.028, R: 0.597
+Counter: 85 Training: l2(x=0.416). Time left: 4.750
+...Result: perf=0.62258, time=0.01064
+knn : [0.677, 0.505, 0.518]. Time: 5.354, R: -1.000
+l2  : [0.417, 0.624, 0.611]. Time: 0.037, R: 0.611
+l1  : [0.543, 0.625, 0.641]. Time: -0.040, R: 0.641
+Counter: 86 Training: l1(x=0.543). Time left: 4.739
+...Result: perf=0.62258, time=0.00995
+knn : [0.680, 0.505, 0.492]. Time: 5.209, R: -1.000
+l2  : [0.191, 0.624, 0.654]. Time: 0.050, R: 0.654
+l1  : [0.043, 0.622, 0.647]. Time: 0.020, R: 0.647
+Counter: 87 Training: l2(x=0.191). Time left: 4.729
+...Result: perf=0.62258, time=0.01114
+knn : [0.676, 0.505, 0.508]. Time: 4.494, R: 0.508
+l2  : [0.126, 0.623, 0.597]. Time: -0.009, R: 0.597
+l1  : [0.209, 0.625, 0.602]. Time: -0.044, R: 0.602
+Counter: 88 Training: l1(x=0.209). Time left: 4.718
+...Result: perf=0.62242, time=0.01064
+knn : [0.675, 0.505, 0.483]. Time: 6.282, R: -1.000
+l2  : [0.308, 0.623, 0.615]. Time: 0.019, R: 0.615
+l1  : [1.000, 0.620, 0.605]. Time: 0.082, R: 0.605
+Counter: 89 Training: l2(x=0.308). Time left: 4.708
+...Result: perf=0.62258, time=0.01096
+knn : [0.673, 0.505, 0.531]. Time: 5.225, R: -1.000
+l2  : [0.379, 0.623, 0.643]. Time: 0.075, R: 0.643
+l1  : [0.550, 0.625, 0.664]. Time: -0.003, R: 0.664
+Counter: 90 Training: l1(x=0.550). Time left: 4.697
+...Result: perf=0.62258, time=0.00986
+knn : [0.678, 0.505, 0.497]. Time: 5.458, R: -1.000
+l2  : [0.081, 0.622, 0.610]. Time: 0.050, R: 0.610
+l1  : [0.325, 0.625, 0.611]. Time: 0.086, R: 0.611
+Counter: 91 Training: l1(x=0.325). Time left: 4.687
+...Result: perf=0.62242, time=0.01003
+knn : [0.677, 0.505, 0.504]. Time: 4.999, R: -1.000
+l2  : [0.564, 0.624, 0.647]. Time: 0.006, R: 0.647
+l1  : [0.114, 0.623, 0.602]. Time: 0.052, R: 0.602
+Counter: 92 Training: l2(x=0.564). Time left: 4.677
+...Result: perf=0.62258, time=0.01105
+knn : [0.680, 0.505, 0.550]. Time: 4.311, R: 0.550
+l2  : [0.591, 0.623, 0.584]. Time: -0.000, R: 0.584
+  C-c C-cTraceback (most recent call last):
+  File "alt_autostat.py", line 102, in <module>
+    x_n, _, _ = bo.select()
+  File "/Users/void/Documents/github/automated-statistician/src/bayesian_optimizer.py", line 127, in select
+    x_cand, y_cand, acq_cand = self._select()
+  File "/Users/void/Documents/github/automated-statistician/src/bayesian_optimizer.py", line 156, in _select
+    self.sess.run(self.train, feed_dict=self.gp_dict)
+  File "/usr/local/lib/python2.7/site-packages/tensorflow/python/client/session.py", line 345, in run
+    results = self._do_run(target_list, unique_fetch_targets, feed_dict_string)
+  File "/usr/local/lib/python2.7/site-packages/tensorflow/python/client/session.py", line 404, in _do_run
+    target_list)
+KeyboardInterrupt
+src: 
