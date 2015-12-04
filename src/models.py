@@ -29,7 +29,7 @@ class Model(object):
     NUM_HYPERPARAMETERS = None
 
     @classmethod
-    def fit(cls, dataset, hyperparameters):
+    def fit(cls, dataset, hyperparameters, verbose=True):
         """
 
         Args:
@@ -44,7 +44,8 @@ class Model(object):
         tic = timeit.default_timer()
         performance = cls._fit(dataset, **hp)
         toc = timeit.default_timer()
-        print "%s(%s) => (%s, %s)" % (cls.__name__, ', '.join(["%s=%s" % (key, value) for key, value in hp.iteritems()]), performance, toc - tic)
+        if verbose:
+            print "%s(%s) => (%s, %s)" % (cls.__name__, ', '.join(["%s=%s" % (key, value) for key, value in hp.iteritems()]), performance, toc - tic)
         return performance, toc - tic
 
     @classmethod
