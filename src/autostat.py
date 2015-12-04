@@ -118,7 +118,7 @@ class ModelHistory(object):
         Actually run the model on the data with new hyperparameters and update history.
         """
         # Run model
-        perf, runtime = self.model.fit(self.dataset, tuple(self.belief.hp[0]))
+        perf, runtime = self.model.fit(self.dataset, tuple(self.belief.hp[0]), verbose=False)
 
         # Append new results to history
         self.update(self.belief.hp, perf, runtime)
@@ -185,12 +185,12 @@ class ModelHistory(object):
 
 
 class AutomaticStatistician(object):
-    def __init__(self, discount=0.9, perf_weight=1.):
+    def __init__(self, discount=0.9, perf_weight=1., depth=0, n_sim=10):
         # Settings
         self.discount = discount
         self.n_queries = 20
-        self.depth = 0
-        self.n_sim = 10
+        self.depth = depth
+        self.n_sim = n_sim
         self.n_reward_samples = 200
         self.perf_sample_std = 0.001
         self.runtime_sample_std = 0.001
@@ -229,14 +229,19 @@ class AutomaticStatistician(object):
 
         # do multi-armed bandit for N iterations
 
+        print ", ".join(["iters", "time_left", "model", "hp", "perf", "runtime"])
         try:
             time_left = time_limit
+            iters = 0
             while time_left > 0:
-                print "%.3f seconds left" % time_left
                 selected = self.select(histories, time_left)
 
-                _, _, runtime = selected.run()
+                hp, perf, runtime = selected.run()
+
+                print ", ".join(str(t) for t in [iters, time_left, selected.model.__name__, float(hp), perf, runtime])
+
                 time_left -= runtime
+                iters += 1
         except KeyboardInterrupt:
             print "Caught keyboard interrupt, finishing early..."
 
@@ -280,7 +285,7 @@ class AutomaticStatistician(object):
         def action_value(i):
             value = self.expected_reward(histories, i, time_left) + \
                     self.discount * np.mean(list(action_observation_values(i)))
-            print "Q(b, %s) = %.3f" % (histories[i].model.__name__, value)
+            # print "Q(b, %s) = %.3f" % (histories[i].model.__name__, value)
             return value
 
         # Return argmax of (6.35)

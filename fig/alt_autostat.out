@@ -1,12 +1,3 @@
-src: python alt_autostat.py 
-I tensorflow/core/common_runtime/local_device.cc:25] Local device intra op parallelism threads: 1
-I tensorflow/core/common_runtime/local_session.cc:45] Local session inter op parallelism threads: 1
-...Result: perf=0.42000, time=3.80019
-...Result: perf=0.62258, time=0.01112
-...Result: perf=0.59636, time=0.00879
-knn : [0.189, 0.000, -0.528]. Time: 3.766, R: -0.528
-l2  : [0.201, 0.000, 0.865]. Time: -0.062, R: 0.865
-l1  : [0.748, 0.000, 1.745]. Time: -0.015, R: 1.745
 Counter: 0 Training: l1(x=0.748). Time left: 60.000
 ...Result: perf=0.62258, time=0.01037
 knn : [0.323, 0.000, -1.508]. Time: 3.790, R: -1.508
@@ -469,18 +460,3 @@ l2  : [0.564, 0.624, 0.647]. Time: 0.006, R: 0.647
 l1  : [0.114, 0.623, 0.602]. Time: 0.052, R: 0.602
 Counter: 92 Training: l2(x=0.564). Time left: 4.677
 ...Result: perf=0.62258, time=0.01105
-knn : [0.680, 0.505, 0.550]. Time: 4.311, R: 0.550
-l2  : [0.591, 0.623, 0.584]. Time: -0.000, R: 0.584
-  C-c C-cTraceback (most recent call last):
-  File "alt_autostat.py", line 102, in <module>
-    x_n, _, _ = bo.select()
-  File "/Users/void/Documents/github/automated-statistician/src/bayesian_optimizer.py", line 127, in select
-    x_cand, y_cand, acq_cand = self._select()
-  File "/Users/void/Documents/github/automated-statistician/src/bayesian_optimizer.py", line 156, in _select
-    self.sess.run(self.train, feed_dict=self.gp_dict)
-  File "/usr/local/lib/python2.7/site-packages/tensorflow/python/client/session.py", line 345, in run
-    results = self._do_run(target_list, unique_fetch_targets, feed_dict_string)
-  File "/usr/local/lib/python2.7/site-packages/tensorflow/python/client/session.py", line 404, in _do_run
-    target_list)
-KeyboardInterrupt
-src: 

@@ -14,7 +14,7 @@ from sklearn import (
 __docformat__ = "restructuredtext en"
 
 # Use 70-30
-TRAINING_SIZE_RATIO = 0.7
+TRAINING_SIZE_RATIO = 1 - 0.33
 
 
 class Dataset(object):

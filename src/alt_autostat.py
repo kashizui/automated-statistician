@@ -3,7 +3,7 @@ from gaussian_process import *
 from kernels import *
 import time
 from sklearn.datasets import make_blobs
-from sklearn.neighbors import RadiusNeighborsClassifier
+from sklearn.neighbors import RadiusNeighborsClassifier  # DO THIS
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.cross_validation import train_test_split
@@ -36,7 +36,7 @@ def train(key, x):
         log_hyper = x * 7.
         hyper = np.exp(log_hyper)
         model.set_params(C=hyper)
-    elif key in ['knn']:
+    elif key in ['knn']:    # DO THIS
         hyper = 7 + (x + 1)/2*23
         model.set_params(radius=hyper)
     t = time.time()
@@ -54,7 +54,7 @@ def run(key, x):
     return t
 
 # Make dataset
-np.random.seed(1)
+np.random.seed(1)  # DO THIS
 data1 = make_blobs(n_samples=10000,
                    n_features=2, centers=2,
                    cluster_std=3.0,
@@ -78,7 +78,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y,
 datas = {'knn' : ([],[],[]),
          'l1' : ([],[],[]),
          'l2' : ([],[],[])}
-models = {'knn' : RadiusNeighborsClassifier(outlier_label=0),
+models = {'knn' : RadiusNeighborsClassifier(outlier_label=0),  # DO THIS
           'l1' : LogisticRegression(penalty='l1'),
           'l2' : LogisticRegression(penalty='l2')}
 # models = {'knn' : RadiusNeighborsClassifier(outlier_label=0)}

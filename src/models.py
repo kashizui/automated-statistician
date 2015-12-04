@@ -17,6 +17,7 @@ from sklearn import (
     ensemble,
     metrics,
     preprocessing,
+    neighbors,
 )
 __docformat__ = "restructuredtext en"
 
@@ -94,6 +95,26 @@ class ClassificationModel(Model):
         lb.fit(np.concatenate([true_target, pred_target]))
         # ROC AUC score
         return metrics.roc_auc_score(lb.transform(true_target), lb.transform(pred_target))
+
+
+class KNN(ClassificationModel):
+    NUM_HYPERPARAMETERS = 1
+
+    @classmethod
+    def _unpack(cls, hyperparameters):
+        return {
+            'radius': 7 + hyperparameters[0]*23,
+        }
+
+    @classmethod
+    def _fit(cls, dataset, **hp):
+        classifier = neighbors.RadiusNeighborsClassifier(outlier_label=0, radius=hp['radius'])
+
+        # Train the model using the training set
+        classifier.fit(dataset.train_data, dataset.train_target)
+
+        # Return score on test set
+        return cls._score(classifier.predict(dataset.test_data), dataset.test_target)
 
 
 class SupportVectorClassifier(ClassificationModel):
@@ -284,7 +305,7 @@ class WorseModel(Model):
 
 
 def list_classification_models():
-    return [SupportVectorClassifier, LogitL1, LogitL2]
+    return [KNN, LogitL1, LogitL2]
 
 
 def list_regression_models():

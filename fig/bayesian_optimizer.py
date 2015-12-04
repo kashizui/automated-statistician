@@ -5,10 +5,7 @@ from src.kernels import SquaredExponential
 from src.gaussian_process import GaussianProcess
 import matplotlib.pyplot as plt
 import time
-np.random.seed(10)
-tf.set_random_seed(10)
-# Settings
-n_samples = 100
+
 batch_size = 4
 new_samples = 1000
 n_dim = 1
@@ -26,51 +23,32 @@ gp = GaussianProcess(n_epochs=100,
                      verbose=0)
 bo = BayesianOptimizer(gp, region=np.array([[0., 1.]]),
                        iters=100,
-                       tries=4,
+                       tries=20,
                        optimizer=tf.train.GradientDescentOptimizer(0.1),
                        verbose=1)
-# Define the latent function + noise
-def observe(X):
-    y = np.float32(
-        1*(-(X - 0.5) ** 2 + 1) +
-        np.random.normal(0,.1, [X.shape[0], 1]))
-    # y = np.float32((np.sin(X.sum(1)).reshape([X.shape[0], 1]) +
-    #                 np.random.normal(0,.1, [X.shape[0], 1])))
-    return y
-# Get data
-X = np.float32(np.random.uniform(0, 1, [n_samples, n_dim]))
-y = observe(X)
-plt.axis((-0.1, 1.1, 0, 1.5))
-# Fit the gp
-bo.fit(X, y)
-for i in xrange(10):
-    # print "Iteration {0:3d}".format(i) + "*"*80
-    t0 = time.time()
-    max_acq = -np.inf
-    # Inner loop to allow for gd with random initializations multiple times
-    x_next, y_next, acq_next = bo.select()
-    # Plot the selected point
-    plt.plot([x_next[0,0], x_next[0,0]], plt.ylim(), 'r--')
-    plt.scatter(x_next, y_next, c='r', linewidths=0, s=50)
-    plt.scatter(x_next, acq_next, c='g', linewidths=0, s=50)
-    # Observe and add point to observed data
-    y_obs = observe(x_next)
-    X = np.vstack((X, x_next))
-    y = np.vstack((y, y_obs))
-    t2 = time.time()
-    # Fit again
-    bo.fit(X, y)
-    print "BOFitDuration: {0:.5f}".format(time.time() - t2)
-    print "BOTotalDuration: {0:.5f}".format(time.time() - t0)
 
-# Get the final posterior mean and variance for the entire domain space
-X_new = np.float32(np.linspace(0, 1, new_samples).reshape(-1, 1))
-X_new = np.sort(X_new, axis=0)
-y_pred, var = gp.np_predict(X_new)
-# Compute the confidence interval
+X = np.array([1.0,
+              0.000335462627903,
+              0.0314978449076,
+              2980.95798704]).reshape(-1,1)
+X = np.log(X)/8
+y = np.array([0.864695262443,
+              0.5,
+              0.860244469176,
+              0.862691649896]).reshape(-1,1)
+X_old = X
+y_old = y
+bo.fit(X, y)
+x_next, y, z = bo.select()
+
+x = np.linspace(-1, 1).reshape(-1,1)
+y_pred, var = gp.np_predict(x)
+ci = 2*np.sqrt(var)
 ci = np.sqrt(var)*2
-plt.plot(X_new, y_pred)
-plt.plot(X_new, y_pred+ci, 'g--')
-plt.plot(X_new, y_pred-ci, 'g--')
-plt.scatter(X, y)
+plt.plot(x, y_pred)
+plt.plot(x, y_pred+ci, 'g--')
+plt.plot(x, y_pred-ci, 'g--')
+plt.scatter(X_old, y_old)
+plt.plot([x_next[0,0], x_next[0,0]], plt.ylim(), 'r--')
 plt.show()
+
