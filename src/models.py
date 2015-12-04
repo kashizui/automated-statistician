@@ -101,7 +101,7 @@ class SupportVectorClassifier(ClassificationModel):
     @classmethod
     def _unpack(cls, hyperparameters):
         return {
-            'penalty': np.exp(20. * hyperparameters[0] - 10.),
+            'penalty': np.exp(16. * hyperparameters[0] - 8.),
         }
 
     @classmethod
