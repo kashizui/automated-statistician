@@ -66,7 +66,7 @@ class BayesianOptimizer(object):
         # placeholder for final
         self.x_placeholder = tf.placeholder(tf.float32, [None, None])
         self.assign_to_x = tf.assign(self.x, self.x_placeholder)
-
+        self.initialize = tf.initialize_variables([self.x])
     def contains_point(self, x):
         """ Checks if x is contained within the optimization task region.
 
@@ -146,7 +146,7 @@ class BayesianOptimizer(object):
             Acquisition function at self.x
         """
         # Only need to initialize self.x
-        self.sess.run(tf.initialize_variables([self.x]))
+        self.sess.run(self.initialize)
         if self.verbose > 0:
             print "BOInitPoint:", self.sess.run(self.x)[0]
             print "BOInitAcquisition:", self.sess.run(self.acq, feed_dict=self.gp_dict)[0,0]
@@ -172,7 +172,7 @@ def main_1d():
     np.random.seed(10)
     tf.set_random_seed(10)
     # Settings
-    n_samples = 100
+    n_samples = 20
     batch_size = 4
     new_samples = 1000
     n_dim = 1
@@ -190,7 +190,7 @@ def main_1d():
                          verbose=0)
     bo = BayesianOptimizer(gp, region=np.array([[0., 1.]]),
                            iters=100,
-                           tries=4,
+                           tries=2,
                            optimizer=tf.train.GradientDescentOptimizer(0.1),
                            verbose=1)
     # Define the latent function + noise
@@ -207,7 +207,7 @@ def main_1d():
     plt.axis((-0.1, 1.1, 0, 1.5))
     # Fit the gp
     bo.fit(X, y)
-    for i in xrange(10):
+    for i in xrange(100):
         # print "Iteration {0:3d}".format(i) + "*"*80
         t0 = time.time()
         max_acq = -np.inf

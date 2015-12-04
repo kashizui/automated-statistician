@@ -104,6 +104,7 @@ class GaussianProcess(object):
             - tf.reduce_sum(tf.mul(np_K_K_inv, np_K_), 1),
             [-1,1]
         ))
+        self.initialize = tf.initialize_all_variables()
 
     def fit(self, X, y):
         """ Fit the gaussian process based on observed data (X, y)
@@ -115,8 +116,10 @@ class GaussianProcess(object):
         y : np nd.array. shape = (n_samples, 1)
             The response variable
         """
+        X = np.float32(X)
+        y = np.float32(X)
         # Train length scales via gradient descent
-        self.sess.run(tf.initialize_all_variables())
+        self.sess.run(self.initialize)
         # Perform in batches
         n_samples = X.shape[0]
         n_batches = n_samples/self.batch_size
@@ -189,7 +192,7 @@ def main_1d():
     import time
     import matplotlib.pyplot as plt
     # Settings
-    n_samples = 5              # number of samples to train GP on 
+    n_samples = 10              # number of samples to train GP on 
     n_predict = 400             # number of samples for prediction
     n_dim = 1                   # 1D regression task
     lim = [0, 3]
@@ -212,7 +215,68 @@ def main_1d():
                          noise=.1,
                          train_noise=False,
                          optimizer=tf.train.AdagradOptimizer(0.01),
-                         verbose=1)
+                         verbose=0)
+    t0 = time.time()
+    # Train GP on training data to learn length scales
+    for _ in xrange(1000):
+        track_time = time.time()
+        gp.fit(X, y)
+        print "Fit_Speed: {0:.5f}".format(time.time() - track_time)
+    print "FitDuration: {0:.5f}".format(time.time() - t0)
+    print "LengthScale: {0:4.3f}".format(gp.sess.run(gp.kernel.length_scales)[0])
+    print "Noise: {0:4.3f}".format(gp.sess.run(gp.noise))
+    print "Cost: {0:4.3f}".format(gp.sess.run(gp.cost, feed_dict={gp.X: X, gp.y: y})[0,0])
+
+    # Make prediction
+    X_new = np.float32(np.linspace(lim[0], lim[1], n_predict).reshape(-1,1))
+    X_new = np.sort(X_new, axis=0)
+    for _ in xrange(1000):
+        track_time = time.time()
+        y_pred, var = gp.np_predict(X_new)
+        print "Predict_Run_Speed: {0:.5f}".format(time.time() - track_time)
+    ci = np.sqrt(var)*2
+    plt.plot(X_new, y_pred)
+    plt.plot(X_new, y_pred+ci, 'g--')
+    plt.plot(X_new, y_pred-ci, 'g--')
+    plt.scatter(X, y)
+    plt.show()
+    
+def rui_1d():
+    """ Use Gaussian process regression to perform a 1D function regression task
+    """
+    from kernels import SquaredExponential
+    import time
+    import matplotlib.pyplot as plt
+    # Settings
+    n_predict = 400             # number of samples for prediction
+    n_dim = 1                   # 1D regression task
+    lim = [0, 10]
+    # Set seed
+    tf.set_random_seed(1)
+    np.random.seed(1)
+    # Generate n_samples
+    X = np.array([1e-2, 1e-1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    y = np.array([ 100, 10,  -1, 0,1,5,7,8,9,99,100,120 ])
+    plt.plot(X, y)
+    plt.show()
+    quit()
+
+    X = np.float32(np.random.uniform(lim[0], lim[1], [n_samples, n_dim]))
+    y = np.float32((np.sin(X.sum(1)).reshape([n_samples, 1]) +
+         np.random.normal(0,.1, [n_samples, 1])))
+    # Create the kernel for GP
+    kernel = SquaredExponential(n_dim=n_dim,
+                                init_scale_range=(.1,1),
+                                init_amp=1.)
+    # Create the GP object
+    gp = GaussianProcess(n_epochs=10,
+                         batch_size=10,
+                         n_dim=n_dim,
+                         kernel=kernel,
+                         noise=.1,
+                         train_noise=False,
+                         optimizer=tf.train.AdagradOptimizer(0.01),
+                         verbose=0)
     t0 = time.time()
     # Train GP on training data to learn length scales
     for _ in xrange(1000):
@@ -300,4 +364,4 @@ def main_2d():
 
     
 if __name__ == "__main__":
-    main_1d()
+    rui_1d()
