@@ -188,7 +188,7 @@ def rui_1d():
                          verbose=0)
     bo = BayesianOptimizer(gp, region=np.array([[0., 1.]]),
                            iters=100,
-                           tries=2,
+                           tries=20,
                            optimizer=tf.train.GradientDescentOptimizer(0.1),
                            verbose=1)
     
@@ -201,9 +201,21 @@ def rui_1d():
                   0.5,
                   0.860244469176,
                   0.862691649896]).reshape(-1,1)
+    X_old = X
+    y_old = y
     bo.fit(X, y)
-    x, y, z = bo.select()
-    print x
+    x_next, y, z = bo.select()
+
+    x = np.linspace(-1, 1).reshape(-1,1)
+    y_pred, var = gp.np_predict(x)
+    ci = 2*np.sqrt(var)
+    ci = np.sqrt(var)*2
+    plt.plot(x, y_pred)
+    plt.plot(x, y_pred+ci, 'g--')
+    plt.plot(x, y_pred-ci, 'g--')
+    plt.scatter(X_old, y_old)
+    plt.plot([x_next[0,0], x_next[0,0]], plt.ylim(), 'r--')
+    plt.show()
 
 def main_1d():
     from kernels import SquaredExponential
@@ -213,7 +225,7 @@ def main_1d():
     np.random.seed(10)
     tf.set_random_seed(10)
     # Settings
-    n_samples = 20
+    n_samples = 3
     batch_size = 4
     new_samples = 1000
     n_dim = 1
@@ -225,7 +237,7 @@ def main_1d():
                          batch_size=10,
                          n_dim=n_dim,
                          kernel=kernel,
-                         noise=0.05,
+                         noise=0.01,
                          train_noise=False,
                          optimizer=tf.train.GradientDescentOptimizer(0.001),
                          verbose=0)
@@ -248,7 +260,7 @@ def main_1d():
     plt.axis((-0.1, 1.1, 0, 1.5))
     # Fit the gp
     bo.fit(X, y)
-    for i in xrange(100):
+    for i in xrange(5):
         # print "Iteration {0:3d}".format(i) + "*"*80
         t0 = time.time()
         max_acq = -np.inf
