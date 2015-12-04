@@ -97,9 +97,11 @@ class ModelHistory(object):
         """
         sample an estimate of best performance and time based on the existing observations
         """
+        runtimes = [self.belief.runtime_mean + 2 * self.belief.runtime_std] * size
         return (self.belief.hp,
-                np.random.normal(self.belief.perf_mean, self.belief.perf_std, size),
-                np.random.normal(self.belief.runtime_mean, self.belief.runtime_std, size))
+                np.clip(np.random.normal(self.belief.perf_mean, self.belief.perf_std, size), 0., 1.),
+                runtimes if size > 1 else runtimes[0])  # return worst case runtime
+                # np.random.normal(self.belief.runtime_mean, self.belief.runtime_std, size))
 
     def update(self, hp, perf, runtime):
         """
@@ -182,15 +184,16 @@ class ModelHistory(object):
 
 
 class AutomaticStatistician(object):
-    def __init__(self, discount=0.9):
+    def __init__(self, discount=0.9, perf_weight=1.):
         # Settings
         self.discount = discount
         self.n_queries = 20
-        self.depth = 3
-        self.n_sim = 1
+        self.depth = 0
+        self.n_sim = 10
         self.n_reward_samples = 200
         self.perf_sample_std = 0.001
         self.runtime_sample_std = 0.001
+        self.perf_weight = perf_weight
         batch_size = 10
 
         # create bayesian optimizer and gassian process
@@ -223,24 +226,33 @@ class AutomaticStatistician(object):
                      for model in models.list_classification_models()]
 
         # do multi-armed bandit for N iterations
-        time_left = time_limit
-        while time_left > 0:
-            print "%.3f seconds left" % time_left
-            selected = self.select(histories, time_left)
 
-            _, _, runtime = selected.run()
-            time_left -= runtime
+        try:
+            time_left = time_limit
+            while time_left > 0:
+                print "%.3f seconds left" % time_left
+                selected = self.select(histories, time_left)
+
+                _, _, runtime = selected.run()
+                time_left -= runtime
+        except KeyboardInterrupt:
+            print "Caught keyboard interrupt, finishing early..."
 
         # plot resulting beliefs
         for m in histories:
             m.plot()
 
-    @staticmethod
-    def reward(perf, runtime, time_left):
+    def reward(self, perf, runtime, time_left, verbose=True):
         """
         Return immediate reward
         """
-        return perf + (time_left - runtime) / time_left
+        # runtime = np.clip(runtime, 0., time_left)
+        runtime = max(0, runtime)
+
+        if time_left - runtime <= 0:
+            return 0
+        else:
+            return self.perf_weight * perf + (time_left - runtime) / time_left
 
     def expected_reward(self, histories, selected_i, time_left):
         """
@@ -248,7 +260,7 @@ class AutomaticStatistician(object):
         """
         selected_action = histories[selected_i]
         _, perfs, runtimes = selected_action.sample(self.n_reward_samples)
-        return np.mean([self.reward(perf, runtime, time_left) for perf, runtime in zip(perfs, runtimes)])
+        return np.mean([self.reward(perf, runtime, time_left, verbose=False) for perf, runtime in zip(perfs, runtimes)])
 
     def select(self, histories, time_left):
         """
