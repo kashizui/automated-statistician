@@ -115,6 +115,8 @@ class BayesianOptimizer(object):
         y : np nd.array. shape = (n_samples, 1)
             The response variable
         """
+        X = np.float32(X)
+        y = np.float32(y)
         self.gp.fit(X, y)
         self.gp_dict = {self.gp.X : self.gp.Xf,
                         self.gp.y : self.gp.yf,
@@ -163,7 +165,46 @@ class BayesianOptimizer(object):
         return (self.sess.run(self.x),
                 self.sess.run(self.y_pred, self.gp_dict),
                 self.sess.run(self.acq, self.gp_dict))
-            
+
+def rui_1d():
+    from kernels import SquaredExponential
+    from gaussian_process import GaussianProcess
+    import matplotlib.pyplot as plt
+
+    batch_size = 4
+    new_samples = 1000
+    n_dim = 1
+    # Set up the modules for bayesian optimizer
+    kernel = SquaredExponential(n_dim=n_dim,
+                                init_scale_range=(.1,.5),
+                                init_amp=1.)
+    gp = GaussianProcess(n_epochs=100,
+                         batch_size=10,
+                         n_dim=n_dim,
+                         kernel=kernel,
+                         noise=0.05,
+                         train_noise=False,
+                         optimizer=tf.train.GradientDescentOptimizer(0.001),
+                         verbose=0)
+    bo = BayesianOptimizer(gp, region=np.array([[0., 1.]]),
+                           iters=100,
+                           tries=2,
+                           optimizer=tf.train.GradientDescentOptimizer(0.1),
+                           verbose=1)
+    
+    X = np.array([1.0, 
+                  0.000335462627903, 
+                  0.0314978449076, 
+                  2980.95798704]).reshape(-1,1)
+    X = np.log(X)/8
+    y = np.array([0.864695262443,
+                  0.5,
+                  0.860244469176,
+                  0.862691649896]).reshape(-1,1)
+    bo.fit(X, y)
+    x, y, z = bo.select()
+    print x
+
 def main_1d():
     from kernels import SquaredExponential
     from gaussian_process import GaussianProcess
@@ -240,4 +281,4 @@ def main_1d():
     
 
 if __name__ == "__main__":
-    main_1d()
+    rui_1d()
