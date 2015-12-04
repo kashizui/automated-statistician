@@ -7,6 +7,7 @@ from src.kernels import *
 from sklearn.datasets import make_classification, load_digits, make_moons, make_blobs
 from sklearn.preprocessing import PolynomialFeatures
 # Models
+from sklearn.neighbors import RadiusNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
@@ -44,14 +45,20 @@ X = np.vstack((data1[0], data2[0]))
 y = np.concatenate((data1[1], data2[1]))
 
 # Add a crap ton of random features
-X_random = np.random.normal(0, 3, (X.shape[0], 2))
-X = np.hstack((X, X_random))
+# X_random = np.random.normal(0, 3, (X.shape[0], 2))
+# X = np.hstack((X, X_random))
 
 X_train, X_test, y_train, y_test = train_test_split(X, y,
                                                     test_size=0.33,
                                                     random_state=42)
-# Add poly features
-# y_pred = LogisticRegression(penalty='l2', C=1000).fit(X_train, y_train).predict(X_test)
-y_pred = SVC(C=.1).fit(X_train, y_train).predict(X_test)
-print (y_test == y_pred).mean()
-color_plot(X_test[:,:2], y_pred)
+xs = np.linspace(7, 20, 20)
+ys = []
+for x in xs:
+    print 'evaluating:', x
+    y_pred = RadiusNeighborsClassifier(radius=x, outlier_label=0).fit(X_train, y_train).predict(X_test)
+    perf = (y_test == y_pred).mean()
+    print perf
+    ys.append(perf)
+# color_plot(X_test[:,:2], y_pred)
+plt.plot(xs, ys)
+plt.show()
