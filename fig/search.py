@@ -60,6 +60,17 @@ def acc_model_counts(data):
     data['counts'] = model_counts
 
 
+def model_name(abbrev):
+    return {
+        "KNN": "Radius Neighbors",
+        "knn": "Radius Neighbors",
+        "l1": "L1-Logistic",
+        "LogitL1": "L1-Logistic",
+        "l2": "L2-Logistic",
+        "LogitL2": "L2-Logistic",
+    }[abbrev]
+
+
 def plot_density(data, name):
     acc_model_counts(data)
     total_queries = len(data['iter'])
@@ -68,13 +79,13 @@ def plot_density(data, name):
     # time_plot = np.linspace(0, 60., 1000)[:, np.newaxis]
 
     plt.figure()
-    plt.axis([0, 60, 0, .012])
+    plt.axis([0, 60, 0, .013])
     for model, counts in data['counts'].iteritems():
         counts = np.float32(counts)[:, np.newaxis]
         kde = KernelDensity(kernel='gaussian', bandwidth=2.5).fit(counts)
         density = np.exp(kde.score_samples(iters_plot))
         weighted_density = density * len(counts) / total_queries
-        plt.plot(iters_plot[:, 0], weighted_density, label=model)
+        plt.plot(iters_plot[:, 0], weighted_density, label=model_name(model))
         # plt.fill(iters_plot[:, 0], np.exp(log_dens), fc='#AAAAFF')
         # plt.text(-3.5, 0.31, "Gaussian Kernel Density")
     plt.xlabel("Iterations")
@@ -108,14 +119,14 @@ plt.savefig('iteration_based.eps', format='eps', dpi=1000)
 
 # Plot against time
 plt.figure()
-# plt.axis([0, 27, 0.55, 1])
+plt.axis([0, 60, 0.55, 1])
 d = datas[0]
 plt.plot(60. - np.float32(d['time_left']), d['max_perf'], label='Thompson Sampling')
 d = datas[2]
 plt.plot(60. - np.float32(d['time_left']), d['max_perf'], label='Lookahead')
 d = datas[1]
 plt.plot(60. - np.float32(d['time_left']), d['max_perf'], label='Random Search')
-plt.legend(loc="lower right")
+plt.legend(loc="upper right")
 plt.xlabel('Time Elapsed (seconds)')
 plt.ylabel('Best Observed Performance')
 plt.savefig('time_based.eps', format='eps', dpi=1000)
