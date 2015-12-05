@@ -61,22 +61,26 @@ def acc_model_counts(data):
 
 
 def plot_density(data, name):
-    # n_queries = len(data['iter'])
+    acc_model_counts(data)
+    total_queries = len(data['iter'])
+    iters_plot = np.arange(0, 60)[:, np.newaxis]
 
-    iters_plot = np.arange(0, len(data['iter']))[:, np.newaxis]
+    # time_plot = np.linspace(0, 60., 1000)[:, np.newaxis]
+
     plt.figure()
+    plt.axis([0, 60, 0, .012])
     for model, counts in data['counts'].iteritems():
-        counts = np.int32(counts)[:, np.newaxis]
+        counts = np.float32(counts)[:, np.newaxis]
         kde = KernelDensity(kernel='gaussian', bandwidth=2.5).fit(counts)
         density = np.exp(kde.score_samples(iters_plot))
-        plt.plot(iters_plot[:, 0], density, label=model)
+        weighted_density = density * len(counts) / total_queries
+        plt.plot(iters_plot[:, 0], weighted_density, label=model)
         # plt.fill(iters_plot[:, 0], np.exp(log_dens), fc='#AAAAFF')
         # plt.text(-3.5, 0.31, "Gaussian Kernel Density")
-    plt.title("Model Selection Frequency Density for " + name)
-    plt.xlabel("iterations")
-    plt.ylabel("frequency of selection per iteration")
+    plt.xlabel("Iterations")
+    plt.ylabel("Selection Density")
     plt.legend()
-    plt.show()
+    plt.savefig("density_" + name.lower().replace(' ', '_') + ".eps", format='eps', dpi=1000)
 
 
 thompson_run = load_rui('alt_autostat.out')
@@ -87,26 +91,35 @@ datas = (thompson_run, random_run, depth_autostat_run)
 
 for d in datas:
     acc_max_perf(d)
-    acc_model_counts(d)
-
-
 
 # Plot against queries
-n_queries = min(len(d['iter']) for d in datas)
-
-plt.axis([0,27,0.55,1])
+min_queries = min(len(d['iter']) for d in datas)
+plt.axis([0, 27, 0.55, 1])
 d = datas[0]
-plt.plot(d['iter'][:n_queries], d['max_perf'][:n_queries], label='Thompson Sampling')
+plt.plot(d['iter'][:min_queries], d['max_perf'][:min_queries], label='Thompson Sampling')
 d = datas[2]
-plt.plot(d['iter'][:n_queries], d['max_perf'][:n_queries], label='Lookahead')
+plt.plot(d['iter'][:min_queries], d['max_perf'][:min_queries], label='Lookahead')
 d = datas[1]
-plt.plot(d['iter'][:n_queries], d['max_perf'][:n_queries], label='Random Search')
+plt.plot(d['iter'][:min_queries], d['max_perf'][:min_queries], label='Random Search')
 plt.legend()
 plt.xlabel('Iterations')
 plt.ylabel('Best Observed Performance')
-
-    
 plt.savefig('iteration_based.eps', format='eps', dpi=1000)
+
+# Plot against time
+plt.figure()
+# plt.axis([0, 27, 0.55, 1])
+d = datas[0]
+plt.plot(60. - np.float32(d['time_left']), d['max_perf'], label='Thompson Sampling')
+d = datas[2]
+plt.plot(60. - np.float32(d['time_left']), d['max_perf'], label='Lookahead')
+d = datas[1]
+plt.plot(60. - np.float32(d['time_left']), d['max_perf'], label='Random Search')
+plt.legend(loc="lower right")
+plt.xlabel('Time Elapsed (seconds)')
+plt.ylabel('Best Observed Performance')
+plt.savefig('time_based.eps', format='eps', dpi=1000)
+
 
 # Plot frequency of selecting certain models
 plot_density(thompson_run, 'Thompson Sampling')
