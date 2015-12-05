@@ -1,9 +1,14 @@
-\begin{thebibliography}{9}
+\begin{thebibliography}{11}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi: #1}\else
   \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Bergstra \& Bengio(2012)Bergstra and Bengio]{bengio}
+Bergstra, James and Bengio, Yoshua.
+\newblock Random search for hyper-parameter optimization.
+\newblock In \emph{JMLR}. 2012.
 
 \bibitem[Duvenaud(2014)]{kernel}
 Duvenaud, David.
@@ -16,6 +21,12 @@ Garnett, Roman.
 \newblock In \emph{CSE 515T Lecture Notes}. 2015.
 \newblock URL
   \url{www.cse.wustl.edu/~garnett/cse515t/files/lecture_notes/12.pdf}.
+
+\bibitem[Guez et~al.(2013)Guez, Silver, and Dayan]{adaptive}
+Guez, Arthur, Silver, David, and Dayan, Peter.
+\newblock Efficient bayes-adaptive reinforcement learning using sample-based
+  search.
+\newblock In \emph{NIPS}. 2013.
 
 \bibitem[Kanter \& Veeramachaneni(2015)Kanter and Veeramachaneni]{deepfeature}
 Kanter, James and Veeramachaneni, Kalyan.
