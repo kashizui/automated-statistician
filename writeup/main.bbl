@@ -1,0 +1,60 @@
+\begin{thebibliography}{9}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Duvenaud(2014)]{kernel}
+Duvenaud, David.
+\newblock Automatic model construction with gaussian processes.
+\newblock University of Cambridge, 2014.
+
+\bibitem[Garnett(2015)]{garnett}
+Garnett, Roman.
+\newblock Bayesian optimization.
+\newblock In \emph{CSE 515T Lecture Notes}. 2015.
+\newblock URL
+  \url{www.cse.wustl.edu/~garnett/cse515t/files/lecture_notes/12.pdf}.
+
+\bibitem[Kanter \& Veeramachaneni(2015)Kanter and Veeramachaneni]{deepfeature}
+Kanter, James and Veeramachaneni, Kalyan.
+\newblock Deep feature synthesis: Towards automating data science endeavors.
+\newblock In \emph{IEEE}. 2015.
+
+\bibitem[Kochenderfer(2015)]{mykel}
+Kochenderfer, Mykel.
+\newblock State uncertainty.
+\newblock In \emph{Decision Making under Uncertainty}, pp.\  150. The MIT
+  Press, 2015.
+
+\bibitem[Rasmussen \& Wiliams(2006)Rasmussen and Wiliams]{rasmussen:book}
+Rasmussen, C and Wiliams, C.
+\newblock Gaussian processes for machine learning.
+\newblock In \emph{Gaussian Processes for Machine Learning}. MIT Press, 2006.
+
+\bibitem[Rasmussen(2006)]{rasmussen:lecture}
+Rasmussen, Carl.
+\newblock Gaussian processes in machine learning.
+\newblock 2006.
+\newblock URL
+  \url{http://www.cs.ubc.ca/~hutter/earg/papers05/rasmussen_gps_in_ml.pdf}.
+
+\bibitem[Snoek et~al.(2012)Snoek, Larochelle, and Adams]{adams:practical}
+Snoek, Jasper, Larochelle, Hugo, and Adams, Ryan~P.
+\newblock Practical bayesian optimization of machine learning algorithms.
+\newblock In \emph{NIPS}. 2012.
+
+\bibitem[Snoek et~al.(2015)Snoek, Rippel, Swersky, Kiros, Satish, Sundaram,
+  Patwary, Prabhat, and Adams]{adams:prior}
+Snoek, Jasper, Rippel, Oren, Swersky, Kevin, Kiros, Ryan, Satish, Nadathur,
+  Sundaram, Narayanan, Patwary, Mostofa, Prabhat, and Adams, Ryan.
+\newblock Scalable bayesian optimization using deep neural networks.
+\newblock In \emph{JMLR}. 2015.
+
+\bibitem[Wang et~al.(2005)Wang, Lizotte, Bowling, and Shuurmans]{sparse}
+Wang, Tao, Lizotte, Daniel, Bowling, Michael, and Shuurmans, Dale.
+\newblock Bayesian sparse sampling for on-line reward optimization.
+\newblock In \emph{ICML}. 2005.
+
+\end{thebibliography}
