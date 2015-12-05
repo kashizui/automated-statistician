@@ -20,10 +20,10 @@ from sklearn.metrics import roc_auc_score
 # plot
 import matplotlib.pyplot as plt
 
-np.random.seed(10)
+# np.random.seed(10)
+# np.random.seed(1)  # DO THIS
 
 # Make dataset
-np.random.seed(1)  # DO THIS
 data1 = make_blobs(n_samples=10000,
                    n_features=2, centers=2,
                    cluster_std=3.0,
