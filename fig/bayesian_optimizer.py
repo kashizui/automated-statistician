@@ -6,6 +6,9 @@ from src.gaussian_process import GaussianProcess
 import matplotlib.pyplot as plt
 import time
 
+np.random.seed(42)
+tf.set_random_seed(42)
+
 batch_size = 4
 new_samples = 1000
 n_dim = 1
@@ -45,10 +48,14 @@ x = np.linspace(-1, 1).reshape(-1,1)
 y_pred, var = gp.np_predict(x)
 ci = 2*np.sqrt(var)
 ci = np.sqrt(var)*2
-plt.plot(x, y_pred)
-plt.plot(x, y_pred+ci, 'g--')
+plt.axis([-1, 1, -1.5, 2.5])
+plt.plot(x, y_pred, label='Posterior Mean')
+plt.plot(x, y_pred+ci, 'g--', label='Posterior Confidence Interval')
 plt.plot(x, y_pred-ci, 'g--')
 plt.scatter(X_old, y_old)
-plt.plot([x_next[0,0], x_next[0,0]], plt.ylim(), 'r--')
-plt.show()
+plt.plot([x_next[0,0], x_next[0,0]], plt.ylim(), 'r--', label='Next Query')
+plt.xlabel('Hyperparameter')
+plt.ylabel('Performance')
+plt.legend(loc='upper left')
+plt.savefig('bayesian_optimization.eps', format='eps', dpi=1000)
 

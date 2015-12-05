@@ -44,8 +44,10 @@
 % Custom libraries.
 \usepackage{amsmath}
 \usepackage{amssymb}
-
+\usepackage{bbm}
 % Custom commands.
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\X}{\mathbb{X}}
 \newcommand{\x}{\mathbf{x}}
@@ -60,8 +62,6 @@
 \newcommand{\abs}[1]{\left|{#1}\right|}
 \newcommand{\norm}[1]{\abs{\abs{{#1}}}_2^2}
 \newcommand{\E}[1]{\mathbb{E}\left[#1\right]}
-
-\DeclareMathOperator*{\argmin}{arg\,min}
 
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{lemma}[theorem]{Lemma}
@@ -106,10 +106,14 @@ Talk about the difficulty of model selection. There are a lot of techniques out 
 There are general rules of thumb. Always start with a simple model and gradually work our way to harder models. The question then becomes whether we can automate this process of model selection in its entirety. We propose to do so by formulating the question as a POMDP that trades-off between model complexity and model accuracy.
 
 \section{Hyperparameter Selection}
-Describe the formulation in a single-model setting, where the objective is simply to find the best hyper using Gaussian process. Formalize this with math about test set performance. 
+Many machine learning models requires the selection of hyperparameters \emph{a priori}. These hyperparameters reflect assumptions the model makes about the data distribution prior to training the model on the existing data. The most common approach to hyerparameter tuning involves cross-validation: using a given set of hyperparameters, a model is trained on training data and evaluated on a test set. The optimal set of hyperparameters is thus the hyerparameters that maximizes the model's performance on the test set. It is thus possible to consider the existence of a latent function $f$ that maps a given set of hyperparameters $\x \in \R^k$ to a performance metric. For a classification problem, this metric may, for example, be the accuracy of the model,
+\begin{align}
+  f(\x) = \frac{1}{N} \sum_{i=1}^N \mathbbm{1}\set{y_i = \hat{y}_i \mid \x},
+\end{align}
+where $y_i$ corresponds to the true label of the $i^{th}$ sample in the test set and $\hat{y}_i$ corresponds to label predicted by the trained model given hyerparameters $\x$. It is often the case that $f(\x)$ is observed with noise (resulting from any randomness associated with the training of the model), thus making it appropriate to reason about the expected value of $f$ instead.
 
 \subsection{Gaussian Processes}
-The task of hyperparameter selection has often been formulated as a function optimization procedure performed that involves Gaussian process regression. Gaussian process regression is a non-parametric Bayesian modeling tool that imposes a prior distribution over $f$ and updates its belief about the distribution upon the observation of data. Formally, a Gaussian process is parameterized by a mean function $m(\x)$ and a kernel $k(\x, \x')$, which we define as,
+Since the goal to to find $\argmax_{\x} \E{f(\x)}$, the task of hyperparameter selection has often been formulated as a function optimization procedure performed using Gaussian process regression. Gaussian process regression is a non-parametric Bayesian modeling tool that imposes a prior distribution over $f$ and updates its belief about the distribution upon the observation of data. Formally, a Gaussian process is parameterized by a mean function $m(\x)$ and a kernel $k(\x, \x')$, which we define as,
 \begin{align}
   m(\x) &= \E{f(\x)} \\
   k(\x, \x') &= \E{(f(\x) - m(\x))(f(\x') - m(\x'))},
@@ -171,9 +175,9 @@ which can be performed via any gradient ascent algorithm. The term involving $\l
 
 
 \subsection{Sequential Hyperparameter Selection}
-The use of a Gaussian process provides the Bayesian approach to modeling the uncertainty of the system, namely the confidence of our interpolated performance function. In an online function optimization framework, however, a sequential series of hyperparamters must be chosen, with the hope that each choice in the series allows us to make a more informed decision about the identity of the hyperparameters. To do so, it is important for the online system to properly manage exploration and exploitation. It is possible to formulate this task as a Belief-State Markov Decision Process where the belief-state is our belief about the latent performance function as capture by the Guassian process, the action-space is the set of all possible hyperparameters to choose from, and the observation-space is the set of all possible performance function evaluations at a particular hyperparameter. However, the continuous nature of the action and observation space makes most online policies intractable without discretization. It is thus common within the hyperparameter optimization literature to adopt the use of an acquisition function\textemdash a deterministic function of the posterior mean and covariance from the Gaussian process that allows for a simple albeit ad-hoc trade-off between exploration and exploitation. 
+The use of a Gaussian process provides the Bayesian approach to modeling the uncertainty of the system, namely the confidence of our interpolated performance function. In an online function optimization framework, however, a sequential series of hyperparamters must be chosen, with the hope that each choice in the series allows us to make a more informed decision about the identity of the hyperparameters. To do so, it is important for the online system to properly manage exploration and exploitation. It is possible to formulate this task as a Belief-State Markov Decision Process (MDPs) where the belief-state is our belief about the latent performance function as capture by the Guassian process, the action-space is the set of all possible hyperparameters to choose from, and the observation-space is the set of all possible performance function evaluations at a particular hyperparameter. However, the continuous nature of the action and observation space makes most online policies intractable without discretization. It is thus common within the hyperparameter optimization literature to adopt the use of an acquisition function\textemdash a deterministic function of the posterior mean and covariance from the Gaussian process that allows for a simple albeit ad-hoc trade-off between exploration and exploitation. 
 
-As is the case with kernel selection, many acquisition functions exist. In our experiments, we use the upper-confidence bound for hyperparameter selection, defined as,
+As is the case with kernel selection, many acquisition functions exist. In our experiments, we use the upper-confidence bound (UCB) for hyperparameter selection, defined as,
 \begin{align}
   m_D(\x) + 2\sqrt{k_D(\x, \x)}.
 \end{align}
@@ -182,19 +186,60 @@ The key benefit of such an acquisition function is that it is easily differentia
 \section{Model Selection}
 While hyperparameter optimization has been extensively studied, there has been few research done on the hyperparameter optimization in a multi-model setting. Research in model selection has largely been focus on variable selection and hyperparameter tuning constrained within a single family of model, such as least-squares regression. As the number of such approaches increases, it is natural to consider the possibility of extending the task of Bayesian optimization to include not only hyperparameter selection, but also model family selection. Here, we describe our formulation of the problem as an multi-armed Gaussian bandit. 
 
-\subsection{Multi-Armed Gaussian Bandit}
+\begin{figure*}[h]
+  \centering
+  \subfigure[Squared exponential spectrum without parameter training.]{\label{fig:sub1}\includegraphics[width=.3\linewidth]{./images/bayesian_optimization.eps}} 
+  ~
+  \subfigure[Spectral distribution after gradient ascent on the regularized likelihood.]{\label{fig:sub2}\includegraphics[width=.3\linewidth]{./images/iteration_based.eps}} 
+  ~
+  \subfigure[The true spectral of the underlying squared exponential kernel.]{\label{fig:sub2}\includegraphics[width=.3\linewidth]{./images/bayesian_optimization.eps}} 
 
+  \caption{A representative Bayesian optimization task is shown in \ref{fig:sub1} for a single-model, single-hyperparameter setting. Performance values were from the L1-logistic regression tested on a binary dataset that was not linearly separable. The UCB acquisition function chooses the next hyerparameter query location based on the location with the largest upper-confidence bound. Following the experimenta procedure in \S\ref{exp}, }
+\end{figure*}
+
+\subsection{Multi-Armed Gaussian Bandit}
+A multi-armed Gaussian bandit problem addresses the question of optimal decision making where one sequentially selects from one of $N$ gaussian distributions with unknown means and variances. In the bandit problem, the reward of each action is the observed realization from the chosen distribution. The multi-armed Gaussian bandit formulation of the model selection problem can be stated as follows.
+
+Each sequential decision involves selecting both a model type (i.e. logistic regression, radius nearest-neighbors, etc.) and a set hyperparameters to initialize the model. The difficulty of performing model selection stems from the fact that each model type has an associated Gaussian process conditioned on the observations made thus far. However, note that we have predetermined our hyperparameter selection policy to be that of maximizing the UCB acquisition function. By doing so, we reduce our decision of which model down to that of selecting one of $N$ models at particular hyperparameter initializations. By looking at each model at a particular hyperparameter, we reduce the Gaussian process to a single Gaussian distribution for each model, thus avoiding the need to make a decision based on $N$ Gaussian processes.
 
 \subsection{Sequential Model Selection}
+As with sequential hyperparameter selection, there are many methods with which sequential model selection can be performed. The reduction of the problem to that of a multi-armed Gaussian bandit further opens up room for the use of various online methods available for Partially Observable Markov Decision Processes (POMDPs). Of particular interest to us is to build a simple system that seeks a dynamic trade-off between exploration and exploitation dependent on the amount of time a user is willing to dedicate to automated model selection. Intuitively, the optimal policy ought to take into account a time limit imposed on the automated selection process; as the time limit gets smaller, the selection algorithm should become increasingly more conservative about querying computationally costly models. To reflect this, we define our reward function as follows,
+\begin{align}
+  R(a_t) =
+  \begin{cases}
+    o_t^{(f)} & o^{(t)}_t > 0 \\
+    0 & o_t^{(t)} \le 0 
+  \end{cases},
+\end{align}
+where $a_t$ is the model chosen at time $t$, yielding a 2-tuple observation $o_t = (o_t^{(f)}, o_t^{(t)})$ where $o_t^{(f)}$ is the observed performance of the model at the chosen hyperparameters $\x$, and $o_t^{(t)}$ is the amount of time left on the clock after the $t$ steps.
+
+\subsubsection{Lookahead with Approximate Value Function}
+In the multi-armed Gaussian Bandit problem, the continuous obseravtion space still presents a challenge for optimal policy construction. One simple approach for tackling such a POMDP is to a one-step lookahead policy. Given a belief about the $N$ Gaussian distributions, we choose the action that maximizes the following expression,
+\begin{align}
+  R(b_t, a_t) + \gamma \frac{1}{n} \sum_{i=1}^n U(b_{t+1}^{(i)}),
+\end{align}
+where $b_{t+1}^{(i)}$ is the updated belief after simulating a virtual observation $o_t$ from the current belief-action pair. $U$ is the approximate value function which is approximated via a rollout evluation strategy described in \cite{someone}. 
+
+\subsubsection{Thompson Sampling}
+Given current belief $b_t$ about the multi-armed Gaussian bandit, Thompson sampling samples a observation of each of the $N$ Gaussian distribution based on our current belief and simply performs the action that maximizes the reward. This simple approach is effective despite its simplicity and has often outperforms competing techniques. However, it is known that Thompson sampling is still a myopic selection strategy and is prone to overexploration.
 
 \section{Experiments}
 \subsection{Experimental Details}
-We test our approach v. random sampling in a limit time duration.
+\label{exp}
+The evaluate the performance of our online multi-model selection algorithm, we evaluated three models, L1-logistic regression L2-logistic regression, and Radius Neighbors classifier on a synthetic binary classification dataset containing $10000$ samples. The samples were generated from a mixture of four Gaussian distributions and labeled according to the XOR labeling scheme. As such, the data set is not linearly separable. Each model contained a single hyperparameter, namely the penalty hyperparameter for the logistic regressions and the radius for the Radius Neighbors classifier.
+
+We ran three different three different model selection algorithms. We used pure random search as our baseline. Despite its simplicity, random search is often used for hyperparameter selection and serves as a minimal baseline for our multi-model selection task. The random search algorithm randoml selects a model and a single set of hyperparameter at each iteration. We then used two flavors of our proposed multi-model selection algorithm. The first implements sequential model selection using lookahead with approximate value function, while the second uses Thompson sampling. Both versions iteratively selects a single model type (according to their respective methods) as well as a single hyperparameter using the UCB acquisition function.
+
+All three selection strategies were tested with a fixed time limit of $60$ seconds for model training and testing. The imposition of the time limit for this example problem simulates the situation in reality when model selection and hyperparameter selection are costly operations that make take many hours to run. Under these circumstances, the balance of exploitation and exploration ought to change depending on the amount of time allowed for the optimization task as well as the differential computation cost of each family of models.
 
 \subsection{Results}
 
 \section{Discussion}
-Interesting stuff regarding how to leverage information across datasets. Limitations regarding acquisition function optimization. 
+
+Interesting stuff regarding how to leverage information across datasets. Limitations regarding acquisition function optimization. \cite{adams:prior} \cite{adams:practical} \cite{rasmussen:book} \cite{rasmussen:lecture} \cite{kernel} \cite{garnett} \cite{sparse} \cite{deepfeature} \cite{mykel}
+
+
+
 
 Because action and state space are both continuous. 
 
