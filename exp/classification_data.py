@@ -42,7 +42,7 @@ y = np.concatenate((data1[1], data2[1]))
 from src.autostat import AutomaticStatistician
 from src.datasets import Dataset
 
-ds = Dataset(X, y)
+ds = Dataset(X, y, scale_predictors=False)
 autostat = AutomaticStatistician(discount=0.5, perf_weight=100.0, depth=3, n_sim=3)
 autostat.run(ds, time_limit=60.)
 

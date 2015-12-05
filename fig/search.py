@@ -40,6 +40,8 @@ def load_csv(path):
             data['perf'].append(perf)
             data['runtime'].append(runtime)
 
+    return data
+
 
 def acc_max_perf(data):
     max_perf = float('-inf')
@@ -50,15 +52,19 @@ def acc_max_perf(data):
 
 autostat_run = load_rui('alt_autostat.out')
 random_run = load_rui('alt_random.out')
+depth_autostat_run = load_csv('depth_autostat.out')
 
-for d in (autostat_run, random_run):
+datas = (autostat_run, random_run, depth_autostat_run)
+
+for d in datas:
     acc_max_perf(d)
 
-
 # Plot against queries
-n_queries = max(len(d['iter']) for d in (autostat_run, random_run))
+n_queries = min(len(d['iter']) for d in datas)
 
-plt.plot(autostat_run['iter'][:n_queries], autostat_run['max_perf'][:n_queries])
+for d in datas:
+    plt.plot(d['iter'][:n_queries], d['max_perf'][:n_queries])
+
 plt.show()
 
 
